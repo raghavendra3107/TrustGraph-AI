@@ -89,9 +89,9 @@ async def update_appeal(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Only analysts and admins can update appeal decisions
-    if current_user.role not in ["analyst", "admin"]:
-        raise HTTPException(status_code=403, detail="Not authorized to update appeals")
+    # Only analysts can update appeal decisions
+    if current_user.role != "analyst":
+        raise HTTPException(status_code=403, detail="Only analysts can approve or reject appeals.")
 
     appeal = db.query(Appeal).filter(Appeal.id == appeal_id).first()
     if not appeal:

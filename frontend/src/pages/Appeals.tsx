@@ -180,35 +180,41 @@ export const Appeals: React.FC = () => {
                 </span>
 
                 {selectedAppeal.status === 'pending' && user?.role !== 'merchant' ? (
-                  <div className="space-y-3">
-                    <textarea
-                      value={reviewNotes}
-                      onChange={(e) => setReviewNotes(e.target.value)}
-                      placeholder="Add investigation comments, whitelist reasons, or block details..."
-                      rows={3}
-                      required
-                      className="w-full p-2.5 text-xs text-slate-200 bg-slate-950 border border-slate-800 rounded-lg focus:border-blue-500 outline-none"
-                    />
-
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleDecision('approved')}
-                        disabled={!reviewNotes}
-                        className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800/80 disabled:text-slate-500 text-white text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                      >
-                        <Check size={14} />
-                        <span>Approve (Allow Tx)</span>
-                      </button>
-                      <button
-                        onClick={() => handleDecision('rejected')}
-                        disabled={!reviewNotes}
-                        className="flex-1 py-2 bg-rose-600 hover:bg-rose-500 disabled:bg-slate-800/80 disabled:text-slate-500 text-white text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                      >
-                        <X size={14} />
-                        <span>Reject (Block Tx)</span>
-                      </button>
+                  user?.role === 'admin' ? (
+                    <div className="p-4 rounded-lg bg-slate-900/40 border border-slate-800 text-xs text-amber-500/90 font-medium">
+                      View Only - Appeal decisions are handled by Security Analysts.
                     </div>
-                  </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <textarea
+                        value={reviewNotes}
+                        onChange={(e) => setReviewNotes(e.target.value)}
+                        placeholder="Add investigation comments, whitelist reasons, or block details..."
+                        rows={3}
+                        required
+                        className="w-full p-2.5 text-xs text-slate-200 bg-slate-950 border border-slate-800 rounded-lg focus:border-blue-500 outline-none"
+                      />
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleDecision('approved')}
+                          disabled={!reviewNotes}
+                          className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800/80 disabled:text-slate-500 text-white text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <Check size={14} />
+                          <span>Approve (Allow Tx)</span>
+                        </button>
+                        <button
+                          onClick={() => handleDecision('rejected')}
+                          disabled={!reviewNotes}
+                          className="flex-1 py-2 bg-rose-600 hover:bg-rose-500 disabled:bg-slate-800/80 disabled:text-slate-500 text-white text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <X size={14} />
+                          <span>Reject (Block Tx)</span>
+                        </button>
+                      </div>
+                    </div>
+                  )
                 ) : (
                   <div className="p-4 rounded-lg bg-slate-900/40 border border-slate-800 text-xs">
                     <span className="text-slate-500 block mb-1">Official Decision Notes:</span>
