@@ -78,23 +78,21 @@ F --> G{Fraud Score}
 
 G -->|0-30 Low Risk| H[Approve Transaction]
 
-G -->|31-70 Medium Risk| I[Flag for Review]
+G -->|31-79 Medium Risk| I[Request Additional Verification]
 
-G -->|71-100 High Risk| J[Block Transaction]
+G -->|80-100 High Risk| J[Automatically Reject Transaction]
 
-I --> K[Security Analyst Reviews Transaction]
+I --> K[Customer Answers Verification Questions]
 
-J --> K
+K --> L[Customer Uploads Supporting Documents]
 
-K --> L{Decision}
+L --> M[Security Analyst Reviews Evidence]
 
-L -->|Approve| M[Transaction Completed]
+M --> N{Final Decision}
 
-L -->|Reject| N[Transaction Blocked]
+N -->|Approve| O[Transaction Completed]
 
-L -->|Request More Information| O[Merchant Submits Appeal]
-
-O --> P[Final Review]
+N -->|Reject| P[Transaction Blocked]
 ```
 ---
 
