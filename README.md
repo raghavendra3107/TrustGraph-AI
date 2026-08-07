@@ -59,19 +59,44 @@ The fraud score ranges from 0 to 100.
 
 ## How TrustGraph AI Works
 
-Customer places order
-↓
+## How TrustGraph AI Works
 
-Backend receives transaction
-↓
+```mermaid
+flowchart TD
 
-Checks details
-↓
+A[Customer Places an Order] --> B[Backend Receives Transaction]
 
-System checks customer's previous transaction history.
-↓
+B --> C[Validate Transaction Details]
 
-Calculates fraud score
+C --> D[Check Customer History]
+
+D --> E[Analyze Fraud Indicators]
+
+E --> F[Calculate Fraud Risk Score]
+
+F --> G{Fraud Score}
+
+G -->|0-30 Low Risk| H[Approve Transaction]
+
+G -->|31-70 Medium Risk| I[Flag for Review]
+
+G -->|71-100 High Risk| J[Block Transaction]
+
+I --> K[Security Analyst Reviews Transaction]
+
+J --> K
+
+K --> L{Decision}
+
+L -->|Approve| M[Transaction Completed]
+
+L -->|Reject| N[Transaction Blocked]
+
+L -->|Request More Information| O[Merchant Submits Appeal]
+
+O --> P[Final Review]
+```
+
 ---
 
 ## 1. Problem Statement & Objective
