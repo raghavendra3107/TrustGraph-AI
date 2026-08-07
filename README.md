@@ -69,9 +69,23 @@ B --> C[Validate Transaction Details]
 
 C --> D[Check Customer History]
 
-D --> E[Analyze Fraud Indicators]
+D --> E[Apply Fraud Detection Rules]
 
-E --> F[Calculate Fraud Risk Score]
+E --> E1[Shared Device ID]
+
+E1 --> E2[Shared IP Address]
+
+E2 --> E3[Shared Shipping Address]
+
+E3 --> E4[Multiple Product Returns]
+
+E4 --> E5[Frequent Refund Requests]
+
+E5 --> E6[Wrong Item Complaints]
+
+E6 --> E7[Failed Payment Attempts]
+
+E7 --> F[Calculate Fraud Risk Score]
 
 F --> G{Fraud Score}
 
@@ -95,7 +109,6 @@ L -->|Request More Information| O[Merchant Submits Appeal]
 
 O --> P[Final Review]
 ```
-
 ---
 
 ## 1. Problem Statement & Objective
