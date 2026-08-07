@@ -216,23 +216,3 @@ AI Build Hackathon 2026
 
 ---
 
-## Development Roadmap
-
-### Phase 1 (Checkpoint 1)
-- [x] Project Architecture
-- [x] Backend Structure
-- [x] Frontend Structure
-- [x] README Documentation
-- [x] Standalone GitHub Repository Initialisation
-
-### Phase 2
-- [ ] Fraud Detection API implementation
-- [ ] Graph connection analysis engine logic
-- [ ] User role authentication logic
-- [ ] Dashboard analytics panel
-
-### Phase 3
-- [ ] AI Risk Engine heuristics training
-- [ ] Appeals Module dispute flow execution
-- [ ] Production Container deployment setup
-- [ ] Final Demo Video demonstration
