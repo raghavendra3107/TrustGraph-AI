@@ -155,3 +155,45 @@ class HybridRiskEngine:
         return f"Flagged due to {', '.join(reasons)} (Combined Confidence: {final_score}%)."
 
 hybrid_risk_engine = HybridRiskEngine()
+
+class FraudClassifier:
+    @staticmethod
+    def calculate_risk(
+        amount: float,
+        currency: str,
+        merchant_category: str,
+        ip_address: str,
+        device_id: str,
+        billing_address: str,
+        shipping_address: str,
+        velocity_count: int
+    ) -> Tuple[float, List[str]]:
+        from app.db.session import SessionLocal
+        from app.services.graph import graph_analyzer
+        
+        db = SessionLocal()
+        try:
+            collusion_score = graph_analyzer.calculate_collusion_score(
+                db=db,
+                user_email="",
+                device_id=device_id,
+                ip_address=ip_address,
+                billing_address=billing_address
+            )
+            score, report = hybrid_risk_engine.calculate_hybrid_risk(
+                db=db,
+                amount=amount,
+                merchant_category=merchant_category,
+                ip_address=ip_address,
+                device_id=device_id,
+                billing_address=billing_address,
+                shipping_address=shipping_address,
+                velocity_count=velocity_count,
+                graph_collusion_score=collusion_score
+            )
+            factors = report.get("evidence_used", [])
+            return score, factors
+        finally:
+            db.close()
+
+fraud_classifier = FraudClassifier()

@@ -5,8 +5,7 @@ from app.db.session import get_db
 from app.models.models import Transaction, Alert, User
 from app.schemas.schemas import TransactionCreate, TransactionResponse
 from app.api.auth import get_current_user
-from app.services.fraud import hybrid_risk_engine
-from app.services.graph import graph_analyzer
+from app.services.fraud import fraud_classifier
 from app.core.notifications import notification_manager
 import datetime
 
@@ -62,26 +61,16 @@ async def create_transaction(
         Transaction.transaction_time >= one_hour_ago
     ).count()
 
-    # Calculate graph collusion score dynamically
-    collusion_score = graph_analyzer.calculate_collusion_score(
-        db=db,
-        user_email=tx_in.user_email,
-        device_id=tx_in.device_id,
-        ip_address=tx_in.ip_address,
-        billing_address=tx_in.billing_address
-    )
-
-    # Calculate risk score using the hybrid risk engine
-    fraud_score, report = hybrid_risk_engine.calculate_hybrid_risk(
-        db=db,
+    # Calculate risk score using fraud classifier
+    fraud_score, factors = fraud_classifier.calculate_risk(
         amount=tx_in.amount,
+        currency=tx_in.currency,
         merchant_category=tx_in.merchant_category,
         ip_address=tx_in.ip_address,
         device_id=tx_in.device_id,
         billing_address=tx_in.billing_address,
         shipping_address=tx_in.shipping_address,
-        velocity_count=recent_count + 1,
-        graph_collusion_score=collusion_score
+        velocity_count=recent_count + 1
     )
 
     # Determine status based on risk score threshold
@@ -111,7 +100,7 @@ async def create_transaction(
         fraud_score=fraud_score,
         is_flagged=is_flagged,
         status=status_str,
-        risk_explanation=report["flagged_reason"]
+        risk_explanation=", ".join(factors)
     )
     
     db.add(tx)
