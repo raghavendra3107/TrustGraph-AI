@@ -10,6 +10,13 @@
 TrustGraph AI is a full-stack web application that helps e-commerce companies detect fraudulent transactions before financial losses occur. It analyzes customer transactions, identifies suspicious relationships between users, devices, IP addresses, and shipping addresses, calculates a fraud risk score, and helps security analysts review high-risk transactions through an interactive dashboard.
 
 ---
+## Problem Statement
+
+E-commerce platforms face increasing fraud through fake accounts, shared devices, stolen payment methods, and misuse of return and refund policies. Traditional fraud detection systems analyze transactions individually, making it difficult to identify coordinated fraudulent activities.
+
+## Objective
+
+TrustGraph AI helps detect suspicious transactions by analyzing customer behavior, transaction history, and relationships between users. It calculates a fraud risk score, identifies potential fraud patterns, and helps security analysts review high-risk transactions.
 
 
 ## Why TrustGraph AI?
@@ -50,9 +57,9 @@ The fraud score ranges from 0 to 100.
 
 0–30 → Low Risk
 
-31–70 → Medium Risk
+31–79 → Medium Risk
 
-71–100 → High Risk
+80–100 → High Risk
 
 
 ---
@@ -96,87 +103,9 @@ N -->|Reject| P[Transaction Blocked]
 ```
 ---
 
-## 1. Problem Statement & Objective
 
-### The Problem
-E-commerce platforms lose billions annually to coordinated transaction fraud. Fraudsters often operate in networks, sharing billing addresses, devices, and IP addresses across multiple seemingly unrelated accounts to bypass traditional fraud filters. Standard transactional analysis checks each event individually, failing to flag these hidden connections.
 
-### The Objective
-TrustGraph AI is designed to help analysts identify and investigate coordinated fraud patterns. The objective of this project is to:
-1. **Analyze** incoming transactions for risk using heuristics (amount, category, mismatch flags, frequency).
-2. **Calculate** a collusion score based on shared attributes using NetworkX graph analysis.
-3. **Store** and record transaction risk profiles in a database.
-4. **Present** an interactive web visualizer to map and review relationship networks of suspicious accounts.
-
----
-
-## 2. System Architecture
-
-TrustGraph AI is built as a client-server architecture containing a React single-page application and a FastAPI backend server, utilizing a SQLite database for local development and PostgreSQL support.
-
-```mermaid
-graph TD
-    subgraph Frontend ["Frontend Client (React SPA)"]
-        UI["React Web App (Dashboard, Transactions, Appeals)"]
-        GV["Graph Visualization Canvas (Prototype)"]
-    end
-
-    subgraph Backend ["FastAPI Backend Server"]
-        API["API Routing & Controllers"]
-        FDE["Fraud Detection Engine (Heuristics & Graph Analysis)"]
-    end
-
-    subgraph Database ["Database Layer"]
-        DB[(SQLite / PostgreSQL fallback)]
-    end
-
-    %% Communication
-    UI -->|HTTP / WebSockets| API
-    API -->|Risk Assessment| FDE
-    FDE -->|Queries / Inserts| DB
-    API -->|Reads / Updates| DB
-
-    %% Styling
-    classDef fe fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#f8fafc;
-    classDef be fill:#0f172a,stroke:#10b981,stroke-width:2px,color:#f8fafc;
-    classDef db fill:#18181b,stroke:#eab308,stroke-width:2px,color:#f8fafc;
-    class Frontend,UI,GV fe;
-    class Backend,API,FDE be;
-    class Database,DB db;
-```
-
----
-
-## 3. Project Workflow
-
-The transaction execution lifecycle and analyst review process flow as follows:
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User as E-commerce User / System
-    actor Analyst as Security Analyst
-    participant Backend as FastAPI Backend
-    participant Engine as Fraud Detection Engine
-    participant DB as SQLite/PostgreSQL Database
-    participant UI as React Frontend
-
-    User->>Backend: Submits transaction request
-    Backend->>Backend: Validates request parameters
-    Backend->>Engine: Evaluates transaction parameters
-    Engine->>Engine: Calculates risk score (Heuristics & network connections)
-    Engine-->>Backend: Returns calculated risk score
-    Backend->>DB: Stores transaction details & score
-    Backend-->>User: Returns validation result (Approve / Review / Block)
-    DB-->>UI: Displays transactions on Dashboard
-    Analyst->>UI: Reviews flagged transactions
-    Analyst->>Backend: Submits appeal decision or review action
-    Backend->>DB: Updates transaction & appeal status
-```
-
----
-
-## 4. Features
+## Features
 
 1. **User Authentication**: Secure sign-in paths for system roles (System Admin, Security Analyst, and Partner Merchant).
 2. **Transaction Management**: Record, query, and list incoming transaction logs with status indicators (Approved, Flagged, Blocked).
@@ -187,7 +116,7 @@ sequenceDiagram
 
 ---
 
-## 5. Technology Stack
+## Technology Stack
 
 | Layer | Technology | Description |
 | :--- | :--- | :--- |
@@ -201,7 +130,7 @@ sequenceDiagram
 
 ---
 
-## 6. Project Folder Structure
+## Project Folder Structure
 
 ```
 trustgraph-ai/
@@ -241,7 +170,7 @@ trustgraph-ai/
 
 ---
 
-## 7. Installation & Setup Instructions
+## Installation & Setup Instructions
 
 ### Prerequisites
 - [Docker & Docker Compose](https://www.docker.com/) installed (for containerized setup).
@@ -292,7 +221,7 @@ npm run dev
 
 ---
 
-## 8. Demo Credentials & Profiles
+## Demo Credentials & Profiles
 
 On initial database creation, seed values are injected. You can log in using these roles:
 
@@ -304,7 +233,7 @@ On initial database creation, seed values are injected. You can log in using the
 
 ---
 
-## 9. Current Progress
+## Current Progress
 
 ### Completed
 - [x] Project Planning
@@ -327,7 +256,7 @@ On initial database creation, seed values are injected. You can log in using the
 
 ---
 
-## 10. Team & Hackathon Context
+## Team & Hackathon Context
 
 **Project Name**
 TrustGraph AI
@@ -342,7 +271,7 @@ AI Build Hackathon 2026
 
 ---
 
-## 11. Development Roadmap
+## Development Roadmap
 
 ### Phase 1 (Checkpoint 1)
 - [x] Project Architecture
