@@ -43,6 +43,7 @@ class Transaction(Base):
     # Relationships
     appeal = relationship("Appeal", back_populates="transaction", uselist=False)
     alerts = relationship("Alert", back_populates="transaction")
+    detailed_fraud_score = relationship("FraudScore", back_populates="transaction", uselist=False)
 
 class Appeal(Base):
     __tablename__ = "appeals"
@@ -97,4 +98,19 @@ class SystemSetting(Base):
     id = Column(Integer, primary_key=True, index=True)
     key = Column(String, unique=True, index=True, nullable=False)
     value = Column(Float, nullable=False)
+
+class FraudScore(Base):
+    __tablename__ = "fraud_scores"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    transaction_id = Column(Integer, ForeignKey("transactions.id"), unique=True)
+    overall_score = Column(Float, nullable=False)
+    heuristics_score = Column(Float, default=0.0)
+    history_score = Column(Float, default=0.0)
+    sharing_score = Column(Float, default=0.0)
+    reasons = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    
+    # Relationships
+    transaction = relationship("Transaction", back_populates="detailed_fraud_score")
 

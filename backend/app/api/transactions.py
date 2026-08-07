@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.db.session import get_db
-from app.models.models import Transaction, Alert, User
+from app.models.models import Transaction, Alert, User, FraudScore
 from app.schemas.schemas import TransactionCreate, TransactionResponse
 from app.api.auth import get_current_user
 from app.services.fraud import fraud_classifier
@@ -62,7 +62,7 @@ async def create_transaction(
     ).count()
 
     # Calculate risk score using fraud classifier
-    fraud_score, factors = fraud_classifier.calculate_risk(
+    fraud_score, factors, report = fraud_classifier.calculate_risk(
         amount=tx_in.amount,
         currency=tx_in.currency,
         merchant_category=tx_in.merchant_category,
@@ -71,7 +71,8 @@ async def create_transaction(
         billing_address=tx_in.billing_address,
         shipping_address=tx_in.shipping_address,
         velocity_count=recent_count + 1,
-        user_email=tx_in.user_email
+        user_email=tx_in.user_email,
+        db=db
     )
 
     # Determine status based on risk score threshold
@@ -107,6 +108,18 @@ async def create_transaction(
     db.add(tx)
     db.commit()
     db.refresh(tx)
+
+    # Create and save detailed fraud score
+    detailed_score = FraudScore(
+        transaction_id=tx.id,
+        overall_score=fraud_score,
+        heuristics_score=report.get("rule_score", 0.0),
+        history_score=report.get("xgb_score", 0.0),
+        sharing_score=report.get("graph_score", 0.0),
+        reasons=", ".join(factors)
+    )
+    db.add(detailed_score)
+    db.commit()
 
     # If flagged, create alert and broadcast via websocket
     if is_flagged:

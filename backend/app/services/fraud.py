@@ -235,12 +235,17 @@ class FraudClassifier:
         billing_address: str,
         shipping_address: str,
         velocity_count: int,
-        user_email: str = ""
-    ) -> Tuple[float, List[str]]:
-        from app.db.session import SessionLocal
+        user_email: str = "",
+        db: Any = None
+    ) -> Tuple[float, List[str], Dict[str, Any]]:
         from app.services.graph import graph_analyzer
         
-        db = SessionLocal()
+        is_local_db = False
+        if not db:
+            from app.db.session import SessionLocal
+            db = SessionLocal()
+            is_local_db = True
+            
         try:
             collusion_score = graph_analyzer.calculate_collusion_score(
                 db=db,
@@ -262,8 +267,9 @@ class FraudClassifier:
                 user_email=user_email
             )
             factors = report.get("evidence_used", [])
-            return score, factors
+            return score, factors, report
         finally:
-            db.close()
+            if is_local_db:
+                db.close()
 
 fraud_classifier = FraudClassifier()

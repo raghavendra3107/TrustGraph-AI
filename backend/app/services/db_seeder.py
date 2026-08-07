@@ -2,7 +2,7 @@ import datetime
 import random
 import json
 from sqlalchemy.orm import Session
-from app.models.models import User, Transaction, Appeal, Alert, SystemSetting
+from app.models.models import User, Transaction, Appeal, Alert, SystemSetting, FraudScore
 from app.core.security import get_password_hash
 from app.services.fraud import hybrid_risk_engine
 
@@ -170,9 +170,31 @@ def seed_db(db: Session):
     db.add_all(transactions)
     db.commit()
 
-    # Refresh transactions to get their primary keys
+    # Refresh transactions to get their primary keys and seed detailed fraud scores
     for tx in transactions:
         db.refresh(tx)
+        try:
+            report_data = json.loads(tx.risk_explanation)
+            h_score = report_data.get("rule_score", 0.0)
+            hist_score = report_data.get("xgb_score", 0.0)
+            sh_score = report_data.get("graph_score", 0.0)
+            reasons_str = ", ".join(report_data.get("evidence_used", []))
+        except Exception:
+            h_score = tx.fraud_score * 0.4
+            hist_score = tx.fraud_score * 0.3
+            sh_score = tx.fraud_score * 0.3
+            reasons_str = tx.risk_explanation or "Seeded transaction"
+            
+        detailed_score = FraudScore(
+            transaction_id=tx.id,
+            overall_score=tx.fraud_score,
+            heuristics_score=h_score,
+            history_score=hist_score,
+            sharing_score=sh_score,
+            reasons=reasons_str
+        )
+        db.add(detailed_score)
+    db.commit()
 
     # 4. Create Alerts for flagged/blocked transactions
     for tx in transactions:
