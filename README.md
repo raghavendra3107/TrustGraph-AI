@@ -1,10 +1,29 @@
 # TrustGraph AI
 
+
+![Python](https://img.shields.io/badge/Python-3.12-blue)
+
+![FastAPI](https://img.shields.io/badge/FastAPI-Latest-green)
+
+![React](https://img.shields.io/badge/React-19-blue)
+
+![License](https://img.shields.io/badge/License-MIT-yellow)
 ### Real-Time E-Commerce Fraud Detection & Interactive Graph Collusion Analysis
 
-TrustGraph AI is a production-grade, full-stack artificial intelligence application engineered to detect, visualize, and mitigate transaction fraud in e-commerce ecosystems. By uniting business heuristics, machine learning (simulated XGBoost inference), and network graph theory (NetworkX degree collusion scoring), TrustGraph AI exposes overlapping fraudulent rings (accounts sharing credit cards, device IDs, IP addresses, or shipping locations) in real-time.
-
 ---
+
+## Why TrustGraph AI?
+
+Traditional fraud detection systems analyze transactions individually, making it difficult to detect organized fraud rings.
+
+TrustGraph AI combines:
+
+- Machine Learning
+- Graph Analytics
+- Explainable AI (XAI)
+- Real-time Alerts
+
+to identify suspicious relationships between users, devices, IP addresses, payment methods, and shipping locations.
 
 ## 1. Problem Statement & Objective
 
@@ -184,7 +203,7 @@ This method spins up PostgreSQL, the FastAPI backend, and the React frontend ser
 
 1. **Clone the repository**:
    ```bash
-   git clone <repository_url>
+   git clone https://github.com/raghavendra3107/TrustGraph-AI.git
    cd trustgraph-ai
    ```
 2. **Build and start the services**:
@@ -238,17 +257,72 @@ On initial database creation, seed values are injected. You can log in using the
 
 ## 9. Current Progress
 
-- [x] **Relational Fraud Engines**: Hybrid risk classifier utilizing heuristics, simulated XGBoost probability, and graph network degree connection scoring.
-- [x] **Real-time Alert Streams**: WebSockets integration pushing immediate critical transaction events to active Analyst dashboards.
-- [x] **Interactive Physics Visualization**: Force-directed spring-physics Canvas visualizer displaying shared IPs/Devices/Addresses in real-time.
-- [x] **Dispute Resolution Flow**: Complete transaction appeal system from submission by Merchant to resolution workflow by Security Analyst.
-- [x] **Docker Containerization**: Portable multi-container setup containing production Nginx reverse proxy configuration.
+## Current Progress
 
+### Completed
+
+- Project Planning
+- System Architecture
+- Backend Structure
+- Frontend Structure
+- README
+- GitHub Repository
+
+### In Progress
+
+- Fraud Detection API
+- Graph Analysis
+- Dashboard
+- Appeals Module
+
+### Upcoming
+
+- Model Training
+- Deployment
+- Performance Optimization
 ---
 
 ## 10. Future Enhancements
 
-- **Graph Neural Network (GNN) Inference**: Replace static degree scoring with a trained GNN classifier (e.g., GCN or GraphSAGE) using PyTorch Geometric to discover deep hidden multi-hop fraudulent clusters.
-- **Explainable AI (SHAP/LIME)**: Integrate live SHAP explanation values inside the analyst portal to show exact feature attributions for risk decisions.
-- **Enterprise IAM Integration**: Support OAuth2/SAML single sign-on (SSO) and granular role-based access control (RBAC).
-- **Persistent Kafka Streaming**: Introduce Apache Kafka for high-throughput transaction ingest queues in highly distributed environments.
+---
+
+# Team
+
+**Project Name**
+
+TrustGraph AI
+
+**Hackathon**
+
+AI Build Hackathon 2026
+
+**Team Members**
+
+- Nandipati Raghavendra
+- Palle Prabhas
+- Sowmya Sri
+---
+
+## Development Roadmap
+
+### Phase 1 (Checkpoint 1)
+
+- Project Architecture
+- Backend Structure
+- Frontend Structure
+- README
+- GitHub Repository
+
+### Phase 2
+
+- Fraud Detection API
+- Graph Analysis
+- Authentication
+- Dashboard
+
+### Phase 3
+
+- AI Risk Engine
+- Appeals Module
+- Deployment
+- Demo Video
