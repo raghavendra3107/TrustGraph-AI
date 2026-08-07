@@ -60,6 +60,7 @@ The fraud score ranges from 0 to 100.
 
 ## How TrustGraph AI Works
 
+
 ```mermaid
 flowchart TD
 
@@ -71,21 +72,7 @@ C --> D[Check Customer History]
 
 D --> E[Apply Fraud Detection Rules]
 
-E --> E1[Shared Device ID]
-
-E1 --> E2[Shared IP Address]
-
-E2 --> E3[Shared Shipping Address]
-
-E3 --> E4[Multiple Product Returns]
-
-E4 --> E5[Frequent Refund Requests]
-
-E5 --> E6[Wrong Item Complaints]
-
-E6 --> E7[Failed Payment Attempts]
-
-E7 --> F[Calculate Fraud Risk Score]
+E --> F[Calculate Fraud Risk Score]
 
 F --> G{Fraud Score}
 
