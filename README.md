@@ -130,96 +130,41 @@ N -->|Reject| P[Transaction Blocked]
 
 ---
 
-## Project Folder Structure
-
-```
-trustgraph-ai/
-├── backend/                  # FastAPI Application
-│   ├── app/
-│   │   ├── api/              # Route controllers (auth, admin, transactions, appeals, graph)
-│   │   ├── core/             # Settings, JWT security, WebSocket notifications
-│   │   ├── db/               # SQLAlchemy engine & session lifecycle
-│   │   ├── models/           # DB tables schema definition (SQLAlchemy)
-│   │   ├── schemas/          # API Request/Response validations (Pydantic)
-│   │   └── services/         # Core logic (DB seeder, HybridRiskEngine, GraphAnalyzer)
-│   ├── main.py               # Application entrypoint & initialization
-│   ├── requirements.txt      # Python package requirements
-│   └── Dockerfile            # Container definition for Python backend
-├── frontend/                 # React SPA Application
-│   ├── public/               # Static assets
-│   ├── src/
-│   │   ├── assets/           # UI media & resources
-│   │   ├── components/       # Reusable components (Sidebar, StatCard, Canvas Graph Visualizer)
-│   │   ├── context/          # Context providers (Authentication, WebSocket Alerts)
-│   │   ├── pages/            # Page components (Dashboard, Transactions, Appeals, Admin, Login)
-│   │   ├── services/         # Axios API connection handlers
-│   │   ├── types/            # TypeScript interfaces
-│   │   ├── App.css           # Custom styles
-│   │   ├── App.tsx           # Route layout container
-│   │   ├── index.css         # Styling global rules
-│   │   └── main.tsx          # Application render engine
-│   ├── package.json          # Dependency scripts & configs
-│   ├── package-lock.json     # Lockfile
-│   ├── tsconfig.json         # TS configuration
-│   ├── vite.config.ts        # Vite packager setup
-│   ├── nginx.conf            # Nginx server setup for SPA router
-│   └── Dockerfile            # Container build for React SPA
-├── docker-compose.yml        # Docker composition map
-└── README.md                 # Main Project Documentation
-```
-
----
-
-## Installation & Setup Instructions
+## Installation & Setup
 
 ### Prerequisites
-- [Docker & Docker Compose](https://www.docker.com/) installed (for containerized setup).
-- Python 3.10+ and Node.js 18+ (for local standalone development).
 
-### Method 1: Running via Docker Compose
-This method builds the backend, database, and React frontend into unified containers.
+- Python 3.10+
+- Node.js 18+
+- Git
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/raghavendra3107/TrustGraph-AI.git
-   cd trustgraph-ai
-   ```
-2. **Build and start the services**:
-   ```bash
-   docker-compose up --build
-   ```
-3. **Access the application**:
-   - **Frontend App**: [http://localhost:3000](http://localhost:3000)
-   - **Backend API**: [http://localhost:8000](http://localhost:8000)
-   - **OpenAPI Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
+### Clone the Repository
 
-### Method 2: Running Locally (Development Mode)
+```bash
+git clone https://github.com/raghavendra3107/TrustGraph-AI.git
+cd TrustGraph-AI
+```
 
-#### 1. Setup Backend
-Navigate to the `backend/` directory, set up a virtual environment, and launch with Uvicorn.
+### Backend
+
 ```bash
 cd backend
-python -m venv venv
-# Windows:
-.\venv\Scripts\activate
-# Unix/macOS:
-source venv/bin/activate
-
 pip install -r requirements.txt
 uvicorn main:app --reload
 ```
-*Note: If no database URL environment variable is supplied, the backend defaults to a local SQLite database (`trustgraph.db`) for zero-configuration development.*
 
-#### 2. Setup Frontend
-Navigate to the `frontend/` directory, install dependencies, and start the development server.
+### Frontend
+
 ```bash
-cd ../frontend
+cd frontend
 npm install
 npm run dev
 ```
-- **Local Dev Site**: [http://localhost:5173](http://localhost:5173)
 
----
+### Access the Application
+
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:8000
 
 ## Demo Credentials & Profiles
 
