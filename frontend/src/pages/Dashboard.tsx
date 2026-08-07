@@ -8,7 +8,7 @@ import {
   BarChart, Bar, Cell
 } from 'recharts';
 import { 
-  CreditCard, ShieldAlert, FileText, AlertCircle, TrendingUp, BellRing
+  CreditCard, ShieldAlert, FileText, AlertCircle, TrendingUp, BellRing, CheckCircle, XCircle, AlertTriangle
 } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
@@ -56,7 +56,7 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
         <StatCard
           title="Total Transactions"
           value={stats?.total_transactions ?? '0'}
@@ -65,11 +65,38 @@ export const Dashboard: React.FC = () => {
           isLoading={isLoading}
         />
         <StatCard
+          title="Approved Transactions"
+          value={stats?.approved_transactions ?? '0'}
+          subtext="Completed orders"
+          icon={<CheckCircle size={18} className="text-emerald-400" />}
+          isLoading={isLoading}
+        />
+        <StatCard
+          title="Blocked Transactions"
+          value={stats?.blocked_transactions ?? '0'}
+          subtext="Prevented fraud"
+          icon={<XCircle size={18} className="text-rose-400" />}
+          isLoading={isLoading}
+        />
+        <StatCard
+          title="Pending Reviews"
+          value={stats?.pending_reviews ?? '0'}
+          subtext="Flagged status"
+          icon={<AlertTriangle size={18} className="text-amber-400" />}
+          isLoading={isLoading}
+        />
+        <StatCard
           title="Global Fraud Rate"
           value={stats ? `${stats.fraud_rate}%` : '0%'}
           subtext="Risk ratio"
           icon={<ShieldAlert size={18} className="text-rose-400" />}
-          trend={{ value: 0.8, isPositive: false }}
+          isLoading={isLoading}
+        />
+        <StatCard
+          title="High Risk (Score >= 80)"
+          value={stats?.high_risk_transactions ?? '0'}
+          subtext="Critical threats"
+          icon={<ShieldAlert size={18} className="text-rose-500" />}
           isLoading={isLoading}
         />
         <StatCard
@@ -80,9 +107,9 @@ export const Dashboard: React.FC = () => {
           isLoading={isLoading}
         />
         <StatCard
-          title="Pending Appeals"
-          value={stats?.pending_appeals ?? '0'}
-          subtext="Awaiting review"
+          title="Total Appeals"
+          value={stats?.total_appeals ?? '0'}
+          subtext="Disputes logged"
           icon={<FileText size={18} />}
           isLoading={isLoading}
         />

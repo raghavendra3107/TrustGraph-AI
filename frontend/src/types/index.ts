@@ -81,7 +81,12 @@ export interface RiskDistribution {
 
 export interface DashboardStats {
   total_transactions: number;
+  approved_transactions: number;
+  blocked_transactions: number;
+  pending_reviews: number;
+  total_appeals: number;
   fraud_rate: number;
+  high_risk_transactions: number;
   pending_appeals: number;
   active_alerts: number;
   revenue_at_risk: number;

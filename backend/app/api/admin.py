@@ -18,15 +18,24 @@ def get_dashboard_stats(
     # Total transaction count
     total_txs = db.query(Transaction).count()
     
+    # Approved, blocked, and pending reviews count
+    approved_txs = db.query(Transaction).filter(Transaction.status == "approved").count()
+    blocked_txs = db.query(Transaction).filter(Transaction.status == "blocked").count()
+    pending_reviews = db.query(Transaction).filter(Transaction.status == "flagged").count()
+    
+    # Appeals metrics
+    total_appeals = db.query(Appeal).count()
+    pending_appeals = db.query(Appeal).filter(Appeal.status == "pending").count()
+    
+    # High risk transaction count (score >= 80)
+    high_risk_txs = db.query(Transaction).filter(Transaction.fraud_score >= 80.0).count()
+    
     # Fraud Rate = (Flagged/Blocked transactions) / Total * 100
     flagged_count = db.query(Transaction).filter(Transaction.is_flagged == True).count()
     fraud_rate = round((flagged_count / total_txs * 100), 2) if total_txs > 0 else 0.0
     
     # Active alerts (unresolved)
     active_alerts = db.query(Alert).filter(Alert.is_resolved == False).count()
-    
-    # Pending appeals
-    pending_appeals = db.query(Appeal).filter(Appeal.status == "pending").count()
     
     # Revenue at risk: sum of amount for all blocked/flagged transactions in the last 30 days
     thirty_days_ago = datetime.datetime.utcnow() - datetime.timedelta(days=30)
@@ -37,7 +46,6 @@ def get_dashboard_stats(
     revenue_at_risk = round(revenue_at_risk, 2)
 
     # Monthly trends (Simulated monthly chart data from db transactions)
-    # We will generate aggregate counts for the last 6 days or 6 months. Let's do recent daily counts to populate the chart nicely.
     trends = []
     for i in range(6, -1, -1):
         day = datetime.datetime.utcnow() - datetime.timedelta(days=i)
@@ -82,7 +90,12 @@ def get_dashboard_stats(
 
     return {
         "total_transactions": total_txs,
+        "approved_transactions": approved_txs,
+        "blocked_transactions": blocked_txs,
+        "pending_reviews": pending_reviews,
+        "total_appeals": total_appeals,
         "fraud_rate": fraud_rate,
+        "high_risk_transactions": high_risk_txs,
         "pending_appeals": pending_appeals,
         "active_alerts": active_alerts,
         "revenue_at_risk": revenue_at_risk,

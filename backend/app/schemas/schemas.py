@@ -123,9 +123,14 @@ class GraphResponse(BaseModel):
 # Dashboard DashboardStats Schema
 class DashboardStats(BaseModel):
     total_transactions: int
+    approved_transactions: int
+    blocked_transactions: int
+    pending_reviews: int
+    total_appeals: int
     fraud_rate: float
-    pending_appeals: int
+    high_risk_transactions: int
     active_alerts: int
+    pending_appeals: int
     revenue_at_risk: float
     monthly_trends: List[dict]
     risk_distribution: List[dict]
