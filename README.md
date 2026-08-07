@@ -57,7 +57,6 @@ The fraud score ranges from 0 to 100.
 
 ---
 
-## How TrustGraph AI Works
 
 ## How TrustGraph AI Works
 
