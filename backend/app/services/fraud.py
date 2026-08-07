@@ -252,7 +252,8 @@ class FraudClassifier:
                 user_email=user_email,
                 device_id=device_id,
                 ip_address=ip_address,
-                billing_address=billing_address
+                billing_address=billing_address,
+                shipping_address=shipping_address,
             )
             score, report = hybrid_risk_engine.calculate_hybrid_risk(
                 db=db,

@@ -116,9 +116,21 @@ class GraphEdgeSchema(BaseModel):
         from_attributes = True
         populate_by_name = True
 
+class SuspiciousFraudCluster(BaseModel):
+    cluster_id: int
+    customers: List[str]
+    size: int
+    average_fraud_risk: float
+    max_fraud_risk: float
+    shared_attributes: List[str]
+    risk_level: str
+
 class GraphResponse(BaseModel):
     nodes: List[GraphNodeSchema]
     edges: List[GraphEdgeSchema]
+    collusion_score: float = 0.0
+    connected_accounts: List[str] = []
+    suspicious_fraud_clusters: List[SuspiciousFraudCluster] = []
 
 # Dashboard DashboardStats Schema
 class DashboardStats(BaseModel):

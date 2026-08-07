@@ -63,9 +63,22 @@ export interface GraphEdge {
   weight: number;
 }
 
+export interface SuspiciousFraudCluster {
+  cluster_id: number;
+  customers: string[];
+  size: number;
+  average_fraud_risk: number;
+  max_fraud_risk: number;
+  shared_attributes: string[];
+  risk_level: 'low' | 'medium' | 'high';
+}
+
 export interface GraphData {
   nodes: GraphNode[];
   edges: GraphEdge[];
+  collusion_score?: number;
+  connected_accounts?: string[];
+  suspicious_fraud_clusters?: SuspiciousFraudCluster[];
 }
 
 export interface MonthlyTrend {
