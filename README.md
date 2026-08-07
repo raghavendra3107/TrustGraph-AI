@@ -1,154 +1,127 @@
 # TrustGraph AI
 
-
 ![Python](https://img.shields.io/badge/Python-3.12-blue)
-
 ![FastAPI](https://img.shields.io/badge/FastAPI-Latest-green)
-
 ![React](https://img.shields.io/badge/React-19-blue)
-
 ![License](https://img.shields.io/badge/License-MIT-yellow)
-### Real-Time E-Commerce Fraud Detection & Interactive Graph Collusion Analysis
+
+### E-Commerce Fraud Detection & Graph Collusion Analysis
+
+TrustGraph AI is a full-stack web application designed to help detect, visualize, and inspect transactional fraud in e-commerce systems. By combining heuristic rules, graph connectivity analysis (via NetworkX), and an interactive network visualizer, TrustGraph AI identifies suspicious relationships (such as accounts sharing device IDs, IP addresses, or shipping locations) to uncover potential fraud rings.
 
 ---
 
 ## Why TrustGraph AI?
 
-Traditional fraud detection systems analyze transactions individually, making it difficult to detect organized fraud rings.
+Traditional fraud detection systems analyze transactions in isolation, making it difficult to spot organized fraud. TrustGraph AI bridges this gap by:
+- Evaluating transactions dynamically using customizable risk rules and network connectivity.
+- Representing user, transaction, device, and network data as a connected graph to reveal collusion.
+- Providing an interactive dashboard and investigation portal for security analysts.
 
-TrustGraph AI combines:
-
-- Machine Learning
-- Graph Analytics
-- Explainable AI (XAI)
-- Real-time Alerts
-
-to identify suspicious relationships between users, devices, IP addresses, payment methods, and shipping locations.
+---
 
 ## 1. Problem Statement & Objective
 
 ### The Problem
-Modern e-commerce platforms lose billions to organized transaction fraud. Sophisticated fraudsters rarely operate in isolation; they utilize **collusion rings**—orchestrations where multiple accounts share physical devices, coordinate from identical IP subnets, or exploit mismatched billing and shipping locations to bypass traditional payment gateway triggers. Standard point-in-time fraud rules fail to recognize these interconnected relational graphs, leaving merchants exposed.
+E-commerce platforms lose billions annually to coordinated transaction fraud. Fraudsters often operate in networks, sharing billing addresses, devices, and IP addresses across multiple seemingly unrelated accounts to bypass traditional fraud filters. Standard transactional analysis checks each event individually, failing to flag these hidden connections.
 
 ### The Objective
-TrustGraph AI solves this by analyzing transactions not just as single events, but as connected nodes in a global network. 
-Our objective is to provide a multi-layered risk evaluation pipeline that:
-1. **Identifies** high-velocity and mismatched transaction patterns (Heuristics).
-2. **Predicts** anomalous behavior signatures using machine learning (Inference Modeling).
-3. **Exposes** collusion clusters (Device/IP sharing) utilizing NetworkX topology.
-4. **Visualizes** these relational fraud rings interactively so risk analysts can instantly inspect nodes, analyze Explainable AI (XAI) factors, and resolve appeal disputes.
+TrustGraph AI is designed to help analysts identify and investigate coordinated fraud patterns. The objective of this project is to:
+1. **Analyze** incoming transactions for risk using heuristics (amount, category, mismatch flags, frequency).
+2. **Calculate** a collusion score based on shared attributes using NetworkX graph analysis.
+3. **Store** and record transaction risk profiles in a database.
+4. **Present** an interactive web visualizer to map and review relationship networks of suspicious accounts.
 
 ---
 
 ## 2. System Architecture
 
-TrustGraph AI is split into a React client application and a FastAPI backend service, designed to scale with a PostgreSQL datastore and real-time event streaming over WebSockets.
+TrustGraph AI is built as a client-server architecture containing a React single-page application and a FastAPI backend server, utilizing a SQLite database for local development and PostgreSQL support.
 
 ```mermaid
 graph TD
-    %% Define components
-    subgraph Client ["Frontend Client (React SPA)"]
-        UI["React 19 / Vite UI"]
-        LC["Live Alert Feed (WebSockets)"]
-        CV["Graph Visualizer (HTML5 Canvas Physics)"]
+    subgraph Frontend ["Frontend Client (React SPA)"]
+        UI["React Web App (Dashboard, Transactions, Appeals)"]
+        GV["Graph Visualization Canvas (Prototype)"]
     end
 
-    subgraph Server ["FastAPI Backend Application"]
-        API["FastAPI Routing Engine"]
-        HRE["Hybrid Risk Engine"]
-        GA["Graph Network Analyzer"]
-        NM["WebSocket Notification Manager"]
+    subgraph Backend ["FastAPI Backend Server"]
+        API["API Routing & Controllers"]
+        FDE["Fraud Detection Engine (Heuristics & Graph Analysis)"]
     end
 
-    subgraph Data ["Storage & Analytics Layer"]
-        DB[(PostgreSQL / SQLite fallback)]
-        NX["NetworkX Graph Connectivity"]
+    subgraph Database ["Database Layer"]
+        DB[(SQLite / PostgreSQL fallback)]
     end
 
-    %% Communication paths
-    UI -->|HTTP Requests| API
-    NM -->|WS Alerts Stream| LC
-    API -->|Transaction Context| HRE
-    API -->|Graph Query| GA
-    HRE -->|Check parameters/settings| DB
-    GA -->|Build local subgraphs| NX
-    NX -->|Read database records| DB
+    %% Communication
+    UI -->|HTTP / WebSockets| API
+    API -->|Risk Assessment| FDE
+    FDE -->|Queries / Inserts| DB
+    API -->|Reads / Updates| DB
 
     %% Styling
-    classDef client fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#f8fafc;
-    classDef server fill:#0f172a,stroke:#10b981,stroke-width:2px,color:#f8fafc;
-    classDef data fill:#18181b,stroke:#eab308,stroke-width:2px,color:#f8fafc;
-    class Server,API,HRE,GA,NM server;
-    class Client,UI,LC,CV client;
-    class Data,DB,NX data;
+    classDef fe fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#f8fafc;
+    classDef be fill:#0f172a,stroke:#10b981,stroke-width:2px,color:#f8fafc;
+    classDef db fill:#18181b,stroke:#eab308,stroke-width:2px,color:#f8fafc;
+    class Frontend,UI,GV fe;
+    class Backend,API,FDE be;
+    class Database,DB db;
 ```
 
 ---
 
 ## 3. Project Workflow
 
-The lifespan of a transaction from submission to review and potential appeal resolution follows this pipeline:
+The transaction execution lifecycle and analyst review process flow as follows:
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Customer as E-commerce Customer
+    actor User as E-commerce User / System
     actor Analyst as Security Analyst
-    participant API as FastAPI Router
-    participant Engine as Hybrid Risk Engine
-    participant Graph as NetworkX Analyzer
-    participant DB as Postgres/SQLite DB
-    participant WS as WebSocket Stream
+    participant Backend as FastAPI Backend
+    participant Engine as Fraud Detection Engine
+    participant DB as SQLite/PostgreSQL Database
+    participant UI as React Frontend
 
-    Customer->>API: Submits Transaction (amount, device_id, IP, billing_addr)
-    API->>DB: Fetch past velocity & user transactions
-    DB-->>API: Returns history
-    API->>Graph: Calculate Collusion Score (shared attributes)
-    Graph->>DB: Scan for overlapping accounts (IP/Device/Address)
-    DB-->>Graph: Overlap records
-    Graph-->>API: Collusion Score (0 - 100)
-    API->>Engine: Run HybridRiskEngine (Rules + XGBoost simulation + Graph score)
-    Engine-->>API: Risk Level & Action (APPROVE / HOLD_FOR_REVIEW / BLOCK)
-    API->>DB: Save Transaction with Fraud Score & Risk Explanation
-    alt Fraud Score >= Threshold
-        API->>WS: Push Alert to Security Analyst UI
-        WS-->>Analyst: Real-time Alert Notification
-    end
-    API-->>Customer: Transaction Response (Success / Review / Rejected)
-
-    Note over Analyst, DB: Investigation & Appeal Phase
-    Analyst->>API: Query Transaction graph
-    API->>Graph: Build graph around transaction
-    Graph-->>API: Subgraph Nodes & Edges
-    API-->>Analyst: Interactive Physics Graph on Web UI
-    Customer->>API: Submits Dispute Appeal (if blocked)
-    API->>DB: Store Appeal Case (Pending Status)
-    Analyst->>API: Reviews Appeal (Approve/Reject appeal)
-    API->>DB: Update Appeal & Transaction Status
+    User->>Backend: Submits transaction request
+    Backend->>Backend: Validates request parameters
+    Backend->>Engine: Evaluates transaction parameters
+    Engine->>Engine: Calculates risk score (Heuristics & network connections)
+    Engine-->>Backend: Returns calculated risk score
+    Backend->>DB: Stores transaction details & score
+    Backend-->>User: Returns validation result (Approve / Review / Block)
+    DB-->>UI: Displays transactions on Dashboard
+    Analyst->>UI: Reviews flagged transactions
+    Analyst->>Backend: Submits appeal decision or review action
+    Backend->>DB: Updates transaction & appeal status
 ```
 
 ---
 
-## 4. Key Features
+## 4. Features
 
-1. **Analytical Dashboard**: Summarizes total transaction counts, active alert metrics, pending dispute counts, and revenue at risk. Includes live WebSocket alerts stream.
-2. **Fraud Investigation Panel**: Lists transaction logs with adjustable query parameters. Click any entry to inspect its metadata details, gauge risk metrics, read Explainable AI (XAI) factors, and visualize node connections.
-3. **Graph Visualizer**: A custom canvas force-directed graph modeling user relations, devices, cards, and transactions to uncover complex fraud rings.
-4. **Appeals Management**: Merchants can appeal blocked transactions; Analysts view files, leave review annotations, and Approve/Reject disputes.
+1. **User Authentication**: Secure sign-in paths for system roles (System Admin, Security Analyst, and Partner Merchant).
+2. **Transaction Management**: Record, query, and list incoming transaction logs with status indicators (Approved, Flagged, Blocked).
+3. **Fraud Risk Score**: Evaluation engine that aggregates rule-based weights and shared attribute network connection checks.
+4. **Dashboard**: Central metrics panel showing transaction stats, active alerts, and recent flagged requests.
+5. **Graph Visualization (Prototype)**: An interactive force-directed canvas mapping connections between transactions, devices, IP addresses, and billing addresses.
+6. **Appeals Management**: Workflow allowing merchants to submit dispute appeals for blocked transactions, and security analysts to approve or reject them.
 
 ---
 
 ## 5. Technology Stack
 
-| Layer | Technology | Details |
+| Layer | Technology | Description |
 | :--- | :--- | :--- |
-| **Backend** | Python 3.10+, FastAPI | High performance asynchronous API engine |
-| **Database** | PostgreSQL / SQLAlchemy | Relational persistence with SQLite local fallback support |
-| **Analysis** | NetworkX, NumPy, Scikit-Learn | Network topology graph construction, heuristic checks, ML logic |
-| **Frontend** | React 19, TypeScript, Vite | Scalable, typed component structure |
-| **Styling** | Tailwind CSS v4, Lucide Icons | Responsive, custom dark-mode aesthetics |
-| **Visuals** | Recharts, HTML5 Canvas | Real-time trend visualizers, force-directed physics engine graph |
-| **Containerization** | Docker & Docker Compose | Multi-container isolation for deployment portability |
+| **Backend** | Python 3.10+, FastAPI | Web API routing and asynchronous endpoints |
+| **Database** | SQLite (dev) / PostgreSQL (prod) | Relational database mapping using SQLAlchemy ORM |
+| **Analysis** | NetworkX, NumPy, Scikit-Learn | Attribute sharing analysis and prototype fraud scoring heuristics |
+| **Frontend** | React 19, TypeScript, Vite | User interface development framework |
+| **Styling** | Tailwind CSS v4, Lucide Icons | Responsive layout styling and icon set |
+| **Visuals** | Recharts, HTML5 Canvas | Analytics graphs and custom physics-based node graph visualizer |
+| **Containers** | Docker & Docker Compose | Containerized execution environment |
 
 ---
 
@@ -194,12 +167,12 @@ trustgraph-ai/
 
 ## 7. Installation & Setup Instructions
 
-### Pre-requisites
-- [Docker & Docker Compose](https://www.docker.com/) installed.
-- (For local dev) Python 3.10+ and Node.js 18+.
+### Prerequisites
+- [Docker & Docker Compose](https://www.docker.com/) installed (for containerized setup).
+- Python 3.10+ and Node.js 18+ (for local standalone development).
 
-### Method 1: Running via Docker Compose (Recommended)
-This method spins up PostgreSQL, the FastAPI backend, and the React frontend served by Nginx in unified containers.
+### Method 1: Running via Docker Compose
+This method builds the backend, database, and React frontend into unified containers.
 
 1. **Clone the repository**:
    ```bash
@@ -218,7 +191,7 @@ This method spins up PostgreSQL, the FastAPI backend, and the React frontend ser
 ### Method 2: Running Locally (Development Mode)
 
 #### 1. Setup Backend
-Navigate to `backend/`, install requirements, and run via Uvicorn.
+Navigate to the `backend/` directory, set up a virtual environment, and launch with Uvicorn.
 ```bash
 cd backend
 python -m venv venv
@@ -233,7 +206,7 @@ uvicorn main:app --reload
 *Note: If no database URL environment variable is supplied, the backend defaults to a local SQLite database (`trustgraph.db`) for zero-configuration development.*
 
 #### 2. Setup Frontend
-Navigate to `frontend/`, install dependencies, and run Vite.
+Navigate to the `frontend/` directory, install dependencies, and start the development server.
 ```bash
 cd ../frontend
 npm install
@@ -257,72 +230,59 @@ On initial database creation, seed values are injected. You can log in using the
 
 ## 9. Current Progress
 
-## Current Progress
-
 ### Completed
-
-- Project Planning
-- System Architecture
-- Backend Structure
-- Frontend Structure
-- README
-- GitHub Repository
+- [x] Project Planning
+- [x] Repository Setup & Git Initialisation
+- [x] Backend Structure (Directory layout, initial FastAPI setup)
+- [x] Frontend Structure (Vite, React boilerplate setup)
+- [x] README Documentation
+- [x] Basic UI (Login page, Sidebar templates)
 
 ### In Progress
-
-- Fraud Detection API
-- Graph Analysis
-- Dashboard
-- Appeals Module
+- [/] Fraud Detection Logic (Refining rules engine weights)
+- [/] Graph Analysis (Integrating NetworkX attribute overlapping queries)
+- [/] Dashboard Integration (Hooking metrics to API endpoints)
+- [/] Database Integration (Resolving schema mapping rules)
 
 ### Upcoming
-
-- Model Training
-- Deployment
-- Performance Optimization
----
-
-## 10. Future Enhancements
+- [ ] Machine Learning Model training and integration
+- [ ] Authentication Improvements (OAuth/JWT improvements)
+- [ ] Deployment and hosting scripts
 
 ---
 
-# Team
+## 10. Team & Hackathon Context
 
 **Project Name**
-
 TrustGraph AI
 
 **Hackathon**
-
 AI Build Hackathon 2026
 
 **Team Members**
-
 - Nandipati Raghavendra
 - Palle Prabhas
 - Sowmya Sri
+
 ---
 
-## Development Roadmap
+## 11. Development Roadmap
 
 ### Phase 1 (Checkpoint 1)
-
-- Project Architecture
-- Backend Structure
-- Frontend Structure
-- README
-- GitHub Repository
+- [x] Project Architecture
+- [x] Backend Structure
+- [x] Frontend Structure
+- [x] README Documentation
+- [x] Standalone GitHub Repository Initialisation
 
 ### Phase 2
-
-- Fraud Detection API
-- Graph Analysis
-- Authentication
-- Dashboard
+- [ ] Fraud Detection API implementation
+- [ ] Graph connection analysis engine logic
+- [ ] User role authentication logic
+- [ ] Dashboard analytics panel
 
 ### Phase 3
-
-- AI Risk Engine
-- Appeals Module
-- Deployment
-- Demo Video
+- [ ] AI Risk Engine heuristics training
+- [ ] Appeals Module dispute flow execution
+- [ ] Production Container deployment setup
+- [ ] Final Demo Video demonstration
