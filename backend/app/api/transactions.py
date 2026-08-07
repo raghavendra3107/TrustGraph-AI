@@ -70,7 +70,8 @@ async def create_transaction(
         device_id=tx_in.device_id,
         billing_address=tx_in.billing_address,
         shipping_address=tx_in.shipping_address,
-        velocity_count=recent_count + 1
+        velocity_count=recent_count + 1,
+        user_email=tx_in.user_email
     )
 
     # Determine status based on risk score threshold

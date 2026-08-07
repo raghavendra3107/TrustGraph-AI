@@ -132,7 +132,8 @@ def seed_db(db: Session):
             billing_address=billing,
             shipping_address=shipping,
             velocity_count=velocity,
-            graph_collusion_score=collusion_val
+            graph_collusion_score=collusion_val,
+            user_email=user_email
         )
 
         status = "approved"
