@@ -25,6 +25,7 @@ export interface Transaction {
   status: 'approved' | 'flagged' | 'blocked' | 'refunded';
   risk_explanation: string | null;
   created_at: string;
+  appeal?: Appeal;
 }
 
 export interface Appeal {

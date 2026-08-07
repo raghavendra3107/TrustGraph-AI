@@ -24,7 +24,7 @@ async def create_appeal(
     # Check if appeal already exists
     existing_appeal = db.query(Appeal).filter(Appeal.transaction_id == appeal_in.transaction_id).first()
     if existing_appeal:
-        raise HTTPException(status_code=400, detail="Appeal already exists for this transaction")
+        raise HTTPException(status_code=400, detail="An appeal has already been submitted for this transaction.")
 
     # Create appeal
     appeal = Appeal(

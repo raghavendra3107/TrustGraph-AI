@@ -1,3 +1,4 @@
+from __future__ import annotations
 from pydantic import BaseModel, EmailStr, Field
 from typing import List, Optional
 from datetime import datetime
@@ -52,6 +53,7 @@ class TransactionResponse(TransactionBase):
     risk_explanation: Optional[str] = None
     transaction_time: datetime
     created_at: datetime
+    appeal: Optional[AppealResponse] = None
 
     class Config:
         from_attributes = True

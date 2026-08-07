@@ -66,6 +66,10 @@ export const Transactions: React.FC = () => {
     setAppealReason('');
     
     try {
+      // Re-fetch transaction from DB to ensure nested appeal data is fully updated
+      const detailTx = await transactionService.getById(tx.id);
+      setSelectedTx(detailTx);
+      
       const network = await graphService.getByTransaction(tx.transaction_id);
       setGraphData(network);
     } catch (err) {
@@ -109,7 +113,11 @@ export const Transactions: React.FC = () => {
       });
       setAppealSuccess('Appeal submitted successfully.');
       setAppealReason('');
-      fetchTransactions();
+      
+      // Refresh transaction list and select updated transaction details immediately
+      await fetchTransactions();
+      const updatedTx = await transactionService.getById(selectedTx.id);
+      setSelectedTx(updatedTx);
     } catch (err: any) {
       setAppealSuccess(err.response?.data?.detail || 'Failed to submit appeal');
     }
@@ -333,30 +341,80 @@ export const Transactions: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Appeal disputes triggers */}
-                {selectedTx.status !== 'approved' && user?.role === 'merchant' && (
-                  <form onSubmit={handleSubmitAppeal} className="border-t border-slate-800/80 pt-4 space-y-3.5">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-                      Dispute Flagged Transaction
-                    </span>
-                    <textarea
-                      value={appealReason}
-                      onChange={(e) => setAppealReason(e.target.value)}
-                      placeholder="Explain why this transaction is legitimate..."
-                      required
-                      rows={2}
-                      className="w-full p-2.5 text-xs text-slate-200 bg-slate-950 border border-slate-800 rounded-lg focus:border-blue-500 outline-none"
-                    />
-                    <button
-                      type="submit"
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold rounded-lg transition-all cursor-pointer"
-                    >
-                      Submit Appeal
-                    </button>
-                    {appealSuccess && (
-                      <p className="text-[10px] text-amber-400 font-semibold">{appealSuccess}</p>
+                {/* Appeal disputes triggers / status card */}
+                {user?.role === 'merchant' && (
+                  <div className="border-t border-slate-800/80 pt-4 space-y-3.5">
+                    {selectedTx.appeal ? (
+                      <div className="p-4 rounded-lg bg-slate-950/60 border border-slate-800 text-xs space-y-3.5">
+                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                          Dispute Appeal Status
+                        </span>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <span className="text-slate-500 block">Appeal Status</span>
+                            <span className={`inline-flex items-center gap-1 mt-0.5 px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
+                              selectedTx.appeal.status === 'approved' 
+                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                                : (selectedTx.appeal.status === 'pending' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20')
+                            }`}>
+                              {selectedTx.appeal.status}
+                            </span>
+                          </div>
+                          
+                          <div>
+                            <span className="text-slate-500 block">Submitted Date</span>
+                            <span className="text-slate-300 font-mono mt-0.5 block">
+                              {new Date(selectedTx.appeal.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+
+                          {selectedTx.appeal.analyst_feedback && (
+                            <div className="col-span-2 border-t border-slate-900 pt-2">
+                              <span className="text-slate-500 block">Analyst Notes</span>
+                              <p className="text-slate-300 mt-0.5 leading-relaxed text-[11px]">
+                                {selectedTx.appeal.analyst_feedback}
+                              </p>
+                            </div>
+                          )}
+
+                          {selectedTx.appeal.status !== 'pending' && (
+                            <div className="col-span-2">
+                              <span className="text-slate-500 block">Final Decision</span>
+                              <span className={`font-semibold mt-0.5 block ${selectedTx.appeal.status === 'approved' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                {selectedTx.appeal.status === 'approved' ? 'Transaction Whitelisted & Approved' : 'Transaction Block Confirmed'}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      selectedTx.status !== 'approved' && (
+                        <form onSubmit={handleSubmitAppeal} className="space-y-3.5">
+                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                            Dispute Flagged Transaction
+                          </span>
+                          <textarea
+                            value={appealReason}
+                            onChange={(e) => setAppealReason(e.target.value)}
+                            placeholder="Explain why this transaction is legitimate..."
+                            required
+                            rows={2}
+                            className="w-full p-2.5 text-xs text-slate-200 bg-slate-950 border border-slate-800 rounded-lg focus:border-blue-500 outline-none"
+                          />
+                          <button
+                            type="submit"
+                            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold rounded-lg transition-all cursor-pointer"
+                          >
+                            Submit Appeal
+                          </button>
+                          {appealSuccess && (
+                            <p className="text-[10px] text-amber-400 font-semibold">{appealSuccess}</p>
+                          )}
+                        </form>
+                      )
                     )}
-                  </form>
+                  </div>
                 )}
               </div>
 
