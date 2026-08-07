@@ -22,29 +22,41 @@ def seed_db(db: Session):
         {"key": "graph_weight", "value": 0.3}
     ]
     for preset in settings_presets:
-        db.add(SystemSetting(key=preset["key"], value=preset["value"]))
+        existing_setting = db.query(SystemSetting).filter(SystemSetting.key == preset["key"]).first()
+        if not existing_setting:
+            db.add(SystemSetting(key=preset["key"], value=preset["value"]))
     db.commit()
 
     # 2. Create Users
-    admin = User(
-        email="admin@trustgraph.ai",
-        hashed_password=get_password_hash("admin123"),
-        full_name="System Administrator",
-        role="admin"
-    )
-    analyst = User(
-        email="analyst@trustgraph.ai",
-        hashed_password=get_password_hash("analyst123"),
-        full_name="Sarah Jenkins (Senior Analyst)",
-        role="analyst"
-    )
-    merchant = User(
-        email="merchant@trustgraph.ai",
-        hashed_password=get_password_hash("merchant123"),
-        full_name="Apex Retailers",
-        role="merchant"
-    )
-    db.add_all([admin, analyst, merchant])
+    users_presets = [
+        {
+            "email": "admin@trustgraph.ai",
+            "password": "admin123",
+            "full_name": "System Administrator",
+            "role": "admin"
+        },
+        {
+            "email": "analyst@trustgraph.ai",
+            "password": "analyst123",
+            "full_name": "Sarah Jenkins (Senior Analyst)",
+            "role": "analyst"
+        },
+        {
+            "email": "merchant@trustgraph.ai",
+            "password": "merchant123",
+            "full_name": "Apex Retailers",
+            "role": "merchant"
+        }
+    ]
+    for u in users_presets:
+        existing_user = db.query(User).filter(User.email == u["email"]).first()
+        if not existing_user:
+            db.add(User(
+                email=u["email"],
+                hashed_password=get_password_hash(u["password"]),
+                full_name=u["full_name"],
+                role=u["role"]
+            ))
     db.commit()
 
     # 3. Mock transactions setup details
