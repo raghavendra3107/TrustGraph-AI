@@ -7,17 +7,71 @@
 
 ### E-Commerce Fraud Detection & Graph Collusion Analysis
 
-TrustGraph AI is a full-stack web application designed to help detect, visualize, and inspect transactional fraud in e-commerce systems. By combining heuristic rules, graph connectivity analysis (via NetworkX), and an interactive network visualizer, TrustGraph AI identifies suspicious relationships (such as accounts sharing device IDs, IP addresses, or shipping locations) to uncover potential fraud rings.
+TrustGraph AI is a full-stack web application that helps e-commerce companies detect fraudulent transactions before financial losses occur. It analyzes customer transactions, identifies suspicious relationships between users, devices, IP addresses, and shipping addresses, calculates a fraud risk score, and helps security analysts review high-risk transactions through an interactive dashboard.
 
 ---
 
+
 ## Why TrustGraph AI?
 
-Traditional fraud detection systems analyze transactions in isolation, making it difficult to spot organized fraud. TrustGraph AI bridges this gap by:
-- Evaluating transactions dynamically using customizable risk rules and network connectivity.
-- Representing user, transaction, device, and network data as a connected graph to reveal collusion.
-- Providing an interactive dashboard and investigation portal for security analysts.
+Traditional fraud detection systems analyze transactions individually, making it difficult to identify organized fraud rings.
 
+TrustGraph AI analyzes relationships between transactions, users, devices, and IP addresses to detect suspicious patterns that may indicate fraudulent activity.
+
+---
+
+## Example Scenario
+
+Suppose two different customer accounts use:
+
+- Same Device ID
+- Same IP Address
+- Same Shipping Address
+
+Although the account names are different, the system considers this suspicious because one person may have created multiple accounts to misuse offers or commit fraud.
+
+TrustGraph AI detects this relationship and assigns a higher fraud risk score.
+
+The system also checks the customer's past transaction history.
+
+For example:
+
+- Too many product returns
+- Frequent refund requests
+- Repeated complaints about wrong items received
+- Multiple failed payment attempts
+- Many accounts using the same device or IP address
+- Multiple failed login attempts
+- Multiple transactions in a very short time
+
+If these suspicious activities are found, the fraud score increases. When the fraud score crosses a predefined threshold, the transaction is sent to the security analyst for manual review.
+
+The fraud score ranges from 0 to 100.
+
+0–30 → Low Risk
+
+31–70 → Medium Risk
+
+71–100 → High Risk
+
+
+---
+
+## How TrustGraph AI Works
+
+Customer places order
+↓
+
+Backend receives transaction
+↓
+
+Checks details
+↓
+
+System checks customer's previous transaction history.
+↓
+
+Calculates fraud score
 ---
 
 ## 1. Problem Statement & Objective
@@ -104,7 +158,7 @@ sequenceDiagram
 
 1. **User Authentication**: Secure sign-in paths for system roles (System Admin, Security Analyst, and Partner Merchant).
 2. **Transaction Management**: Record, query, and list incoming transaction logs with status indicators (Approved, Flagged, Blocked).
-3. **Fraud Risk Score**: Evaluation engine that aggregates rule-based weights and shared attribute network connection checks.
+3. **Fraud Risk Score**: the score is based on both the current transaction and the customer's past history.
 4. **Dashboard**: Central metrics panel showing transaction stats, active alerts, and recent flagged requests.
 5. **Graph Visualization (Prototype)**: An interactive force-directed canvas mapping connections between transactions, devices, IP addresses, and billing addresses.
 6. **Appeals Management**: Workflow allowing merchants to submit dispute appeals for blocked transactions, and security analysts to approve or reject them.
