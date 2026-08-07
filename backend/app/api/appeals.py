@@ -5,11 +5,13 @@ from app.db.session import get_db
 from app.models.models import Appeal, Transaction, User
 from app.schemas.schemas import AppealCreate, AppealUpdate, AppealResponse
 from app.api.auth import get_current_user
+from app.core.notifications import notification_manager
+import datetime
 
 router = APIRouter()
 
 @router.post("/", response_model=AppealResponse, status_code=201)
-def create_appeal(
+async def create_appeal(
     appeal_in: AppealCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -34,6 +36,23 @@ def create_appeal(
     db.add(appeal)
     db.commit()
     db.refresh(appeal)
+
+    # Broadcast new appeal notification via WebSocket
+    appeal_payload = {
+        "type": "NEW_APPEAL",
+        "data": {
+            "id": appeal.id,
+            "transaction_id": appeal.transaction_id,
+            "transaction_code": tx.transaction_id,
+            "user_email": appeal.user_email,
+            "reason": appeal.reason,
+            "status": appeal.status,
+            "amount": tx.amount,
+            "created_at": appeal.created_at.isoformat() if hasattr(appeal.created_at, "isoformat") else str(appeal.created_at)
+        }
+    }
+    await notification_manager.broadcast(appeal_payload)
+
     return appeal
 
 @router.get("/", response_model=List[AppealResponse])
@@ -64,7 +83,7 @@ def read_appeal(
     return appeal
 
 @router.put("/{appeal_id}", response_model=AppealResponse)
-def update_appeal(
+async def update_appeal(
     appeal_id: int,
     appeal_update: AppealUpdate,
     db: Session = Depends(get_db),
@@ -93,4 +112,21 @@ def update_appeal(
 
     db.commit()
     db.refresh(appeal)
+
+    # Broadcast appeal decision event via WebSocket
+    event_type = "APPEAL_APPROVED" if appeal.status == "approved" else "APPEAL_REJECTED"
+    appeal_payload = {
+        "type": event_type,
+        "data": {
+            "id": appeal.id,
+            "transaction_id": appeal.transaction_id,
+            "transaction_code": tx.transaction_id if tx else "unknown",
+            "user_email": appeal.user_email,
+            "status": appeal.status,
+            "analyst_feedback": appeal.analyst_feedback,
+            "updated_at": datetime.datetime.utcnow().isoformat()
+        }
+    }
+    await notification_manager.broadcast(appeal_payload)
+
     return appeal

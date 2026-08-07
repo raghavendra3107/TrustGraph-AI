@@ -44,11 +44,51 @@ export const AlertProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     socket.onmessage = (event) => {
       try {
         const payload = JSON.parse(event.data);
+        let newAlert: WSAlertData | null = null;
+        
         if (payload.type === 'NEW_ALERT') {
-          const newAlert: WSAlertData = payload.data;
-          setWsAlerts((prev) => [newAlert, ...prev]);
+          newAlert = payload.data;
+        } else if (payload.type === 'NEW_APPEAL') {
+          newAlert = {
+            id: payload.data.id + 10000, // Avoid key collision
+            transaction_id: payload.data.transaction_id,
+            transaction_code: payload.data.transaction_code,
+            severity: 'medium',
+            message: `Dispute Appeal Submitted: "${payload.data.reason}"`,
+            fraud_score: 50,
+            amount: payload.data.amount || 0,
+            user_email: payload.data.user_email,
+            created_at: payload.data.created_at
+          };
+        } else if (payload.type === 'APPEAL_APPROVED') {
+          newAlert = {
+            id: payload.data.id + 20000,
+            transaction_id: payload.data.transaction_id,
+            transaction_code: payload.data.transaction_code,
+            severity: 'low',
+            message: `Appeal APPROVED: ${payload.data.analyst_feedback || 'No comment'}`,
+            fraud_score: 0,
+            amount: 0,
+            user_email: payload.data.user_email,
+            created_at: payload.data.updated_at
+          };
+        } else if (payload.type === 'APPEAL_REJECTED') {
+          newAlert = {
+            id: payload.data.id + 30000,
+            transaction_id: payload.data.transaction_id,
+            transaction_code: payload.data.transaction_code,
+            severity: 'critical',
+            message: `Appeal REJECTED: ${payload.data.analyst_feedback || 'No comment'}`,
+            fraud_score: 100,
+            amount: 0,
+            user_email: payload.data.user_email,
+            created_at: payload.data.updated_at
+          };
+        }
+        
+        if (newAlert) {
+          setWsAlerts((prev) => [newAlert!, ...prev]);
           
-          // Optional: sound chime or visual notification trigger
           try {
             const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-84.wav');
             audio.volume = 0.25;
