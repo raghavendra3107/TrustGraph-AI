@@ -86,8 +86,10 @@ def update_appeal(
     if tx:
         if appeal_update.status == "approved":
             tx.status = "approved"  # Override fraud flag if approved
+            tx.is_flagged = False
         elif appeal_update.status == "rejected":
             tx.status = "blocked"
+            tx.is_flagged = True
 
     db.commit()
     db.refresh(appeal)
