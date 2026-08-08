@@ -17,107 +17,51 @@ By unifying rule-based heuristics, explainable AI (XAI) risk scoring, relational
 ---
 
 ---
+
 ## System Workflow
 
 ```mermaid
 flowchart TD
 
-    A["Customer Places Order"]
-    B["Validate Transaction Details"]
-    C["Check Customer & Transaction History"]
-    D["Fraud Risk Engine"]
-    E["Fraud Risk Score<br/>0 - 100"]
-    F{"Risk Level"}
+    A["Customer Places Order"] --> B["Validate Transaction"]
+    B --> C["Check Customer History"]
+    C --> D["Fraud Risk Engine"]
+    D --> E["Calculate Fraud Risk Score 0-100"]
+    E --> F{"Risk Level"}
 
-    A --> B
-    B --> C
-    C --> D
-    D --> E
-    E --> F
-
-    F -->|"Low Risk"| G["Continue Transaction"]
-    F -->|"Medium Risk"| H["Additional Verification / Review"]
-    F -->|"High Risk"| I["Create Fraud Investigation"]
+    F -->|"Low Risk 0-30"| G["Continue Transaction"]
+    F -->|"Medium Risk 31-79"| H["Additional Verification"]
+    F -->|"High Risk 80-100"| I["Create Fraud Investigation"]
 
     H --> J["Security Analyst Review"]
-
-    I --> K["Investigation Graph"]
+    I --> K["Fraud Investigation Graph"]
 
     K --> L["Analyze Shared Identifiers"]
 
-    L --> L1["Product"]
-    L --> L2["Merchant"]
-    L --> L3["Customer IP"]
-    L --> L4["Device ID"]
-    L --> L5["Billing Address"]
-    L --> L6["Shipping Address"]
+    L --> L1["IP Address"]
+    L --> L2["Device ID"]
+    L --> L3["Billing Address"]
+    L --> L4["Shipping Address"]
 
-    L3 --> M["Identify Related Customers"]
+    L1 --> M["Identify Related Customers"]
+    L2 --> M
+    L3 --> M
     L4 --> M
-    L5 --> M
-    L6 --> M
 
-    M --> N["Shared IP / Device / Address Detection"]
+    M --> J
+    J --> N["Fraud Reasons and Risk Analysis"]
+    N --> O["Analyst Notes"]
+    O --> P["Analyst Recommendation"]
+    P --> Q["Merchant Review"]
 
-    N --> J
+    Q --> R{"Merchant Final Decision"}
 
-    J --> O["Fraud Reasons & Risk Analysis"]
-    O --> P["Analyst Notes"]
-    P --> Q["Analyst Recommendation"]
+    R -->|"Approve"| S["Approved Order"]
+    R -->|"Reject"| T["Blocked Order"]
 
-    Q --> R["Relevant Merchant"]
-
-    R --> S{"Merchant Final Decision"}
-
-    S -->|"Approve"| T["Approved Order"]
-    S -->|"Reject"| U["Blocked Order"]
-
-    G --> V["Transaction Completed"]
-    T --> V
-    U --> W["Fraud Case Closed"]
-
-    classDef start fill:#2563eb,color:#fff,stroke:#1d4ed8,stroke-width:2px
-    classDef process fill:#1e293b,color:#fff,stroke:#475569,stroke-width:2px
-    classDef risk fill:#dc2626,color:#fff,stroke:#991b1b,stroke-width:2px
-    classDef decision fill:#7c3aed,color:#fff,stroke:#6d28d9,stroke-width:2px
-    classDef success fill:#059669,color:#fff,stroke:#047857,stroke-width:2px
-    classDef danger fill:#dc2626,color:#fff,stroke:#991b1b,stroke-width:2px
-
-    class A start
-    class B,C,D,K,L,L1,L2,L3,L4,L5,L6,M,N,J,O,P,Q,R,H process
-    class E,I risk
-    class F,S decision
-    class G,T,V success
-    class U,W danger
-
----
-## 🚀 Key Innovation & Platform Architecture
-
-```mermaid
-flowchart TD
-    subgraph Client ["Frontend Layer (Vercel)"]
-        UI["React 19 + Vite SPA"]
-        WSClient["WebSocket Notification Subscriptions"]
-    end
-
-    subgraph Backend ["Backend API & Intelligence Layer (Render)"]
-        API["FastAPI REST Services (/api/v1)"]
-        WSServer["WebSocket Manager (/ws)"]
-        RiskEngine["Hybrid Risk Engine (Heuristics + Relational Sharing)"]
-        GraphEngine["Graph Analyzer (NetworkX Collusion Analysis)"]
-    end
-
-    subgraph Database ["Persistence Layer"]
-        DB[(Render PostgreSQL / Local SQLite)]
-    end
-
-    UI -->|HTTPS Requests| API
-    WSClient <-->|WSS Live Channel| WSServer
-    API --> RiskEngine
-    API --> GraphEngine
-    RiskEngine --> DB
-    GraphEngine --> DB
-```
+    G --> U["Transaction Completed"]
+    S --> U
+    T --> V["Fraud Case Closed"]
 
 ---
 
