@@ -1,218 +1,383 @@
 # TrustGraph AI
 
-![Python](https://img.shields.io/badge/Python-3.12-blue)
-![FastAPI](https://img.shields.io/badge/FastAPI-Latest-green)
-![React](https://img.shields.io/badge/React-19-blue)
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-v0.100%2B-green)
+![React](https://img.shields.io/badge/React-v19-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-v5.7-blue)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-cyan)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-v15-blue)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
 ### E-Commerce Fraud Detection & Graph Collusion Analysis
 
-TrustGraph AI is a full-stack web application that helps e-commerce companies detect fraudulent transactions before financial losses occur. It analyzes customer transactions, identifies suspicious relationships between users, devices, IP addresses, and shipping addresses, calculates a fraud risk score, and helps security analysts review high-risk transactions through an interactive dashboard.
+**TrustGraph AI** is a full-stack e-commerce fraud detection and investigation platform designed to identify high-risk transactions, credit card fraud, velocity spikes, and complex fraud rings across multi-merchant marketplaces. 
 
----
-## Problem Statement
-
-E-commerce platforms face increasing fraud through fake accounts, shared devices, stolen payment methods, and misuse of return and refund policies. Traditional fraud detection systems analyze transactions individually, making it difficult to identify coordinated fraudulent activities.
-
-## Objective
-
-TrustGraph AI helps detect suspicious transactions by analyzing customer behavior, transaction history, and relationships between users. It calculates a fraud risk score, identifies potential fraud patterns, and helps security analysts review high-risk transactions.
-
-
-## Why TrustGraph AI?
-
-Traditional fraud detection systems analyze transactions individually, making it difficult to identify organized fraud rings.
-
-TrustGraph AI analyzes relationships between transactions, users, devices, and IP addresses to detect suspicious patterns that may indicate fraudulent activity.
+By unifying rule-based heuristics, explainable AI (XAI) risk scoring, relational sharing metrics, and a **4-tier hierarchical NetworkX graph visualizer**, TrustGraph AI empowers security analysts to investigate collusive buyer accounts and gives merchants full autonomy to render final order decisions on their store volume.
 
 ---
 
-## Example Scenario
-
-Suppose two different customer accounts use:
-
-- Same Device ID
-- Same IP Address
-- Same Shipping Address
-
-Although the account names are different, the system considers this suspicious because one person may have created multiple accounts to misuse offers or commit fraud.
-
-TrustGraph AI detects this relationship and assigns a higher fraud risk score.
-
-The system also checks the customer's past transaction history.
-
-For example:
-
-- Too many product returns
-- Frequent refund requests
-- Repeated complaints about wrong items received
-- Multiple failed payment attempts
-- Many accounts using the same device or IP address
-- Multiple failed login attempts
-- Multiple transactions in a very short time
-
-If these suspicious activities are found, the fraud score increases. When the fraud score crosses a predefined threshold, the transaction is sent to the security analyst for manual review.
-
-The fraud score ranges from 0 to 100.
-
-0–30 → Low Risk
-
-31–79 → Medium Risk
-
-80–100 → High Risk
-
-
----
-
-
-## How TrustGraph AI Works
-
+## 🚀 Key Innovation & Platform Architecture
 
 ```mermaid
 flowchart TD
+    subgraph Client ["Frontend Layer (Vercel)"]
+        UI["React 19 + Vite SPA"]
+        WSClient["WebSocket Notification Subscriptions"]
+    end
 
-A[Customer Places an Order] --> B[Backend Receives Transaction]
+    subgraph Backend ["Backend API & Intelligence Layer (Render)"]
+        API["FastAPI REST Services (/api/v1)"]
+        WSServer["WebSocket Manager (/ws)"]
+        RiskEngine["Hybrid Risk Engine (Heuristics + Relational Sharing)"]
+        GraphEngine["Graph Analyzer (NetworkX Collusion Analysis)"]
+    end
 
-B --> C[Validate Transaction Details]
+    subgraph Database ["Persistence Layer"]
+        DB[(Render PostgreSQL / Local SQLite)]
+    end
 
-C --> D[Check Customer History]
-
-D --> E[Apply Fraud Detection Rules]
-
-E --> F[Calculate Fraud Risk Score]
-
-F --> G{Fraud Score}
-
-G -->|0-30 Low Risk| H[Approve Transaction]
-
-G -->|31-79 Medium Risk| I[Request Additional Verification]
-
-G -->|80-100 High Risk| J[Automatically Reject Transaction]
-
-I --> K[Customer Answers Verification Questions]
-
-K --> L[Customer Uploads Supporting Documents]
-
-L --> M[Security Analyst Reviews Evidence]
-
-M --> N{Final Decision}
-
-N -->|Approve| O[Transaction Completed]
-
-N -->|Reject| P[Transaction Blocked]
+    UI -->|HTTPS Requests| API
+    WSClient <-->|WSS Live Channel| WSServer
+    API --> RiskEngine
+    API --> GraphEngine
+    RiskEngine --> DB
+    GraphEngine --> DB
 ```
----
-
-
-
-## Features
-
-1. **User Authentication**: Secure sign-in paths for system roles (System Admin, Security Analyst, and Partner Merchant).
-2. **Transaction Management**: Record, query, and list incoming transaction logs with status indicators (Approved, Flagged, Blocked).
-3. **Fraud Risk Score**: the score is based on both the current transaction and the customer's past history.
-4. **Dashboard**: Central metrics panel showing transaction stats, active alerts, and recent flagged requests.
-5. **Graph Visualization (Prototype)**: An interactive force-directed canvas mapping connections between transactions, devices, IP addresses, and billing addresses.
-6. **Appeals Management**: Workflow allowing merchants to submit dispute appeals for blocked transactions, and security analysts to approve or reject them.
 
 ---
 
-## Technology Stack
+## 👥 System Roles & RBAC Matrix
 
-| Layer | Technology | Description |
+TrustGraph AI enforces strict Role-Based Access Control (RBAC) across **three distinct authenticated roles**. There is **no Customer login role**—customers are external buyers represented through transaction metadata.
+
+| Capabilities | Admin (`admin@trustgraph.ai`) | Security Analyst (`analyst@trustgraph.ai`) | Merchant (`apple@...`, `dell@...`, etc.) |
+| :--- | :---: | :---: | :---: |
+| **Marketplace Scope** | Global (All Stores) | Global (All Stores) | Store Isolated (`current_user.seller_id`) |
+| **View Dashboard Stats** | Global Marketplace | Global Marketplace | Store Volume Only |
+| **View Transaction Logs** | Read-Only | Read-Only | Store Volume Only |
+| **Investigate Fraud Graph** | Full Graph | Full Graph | Transaction Investigation Graph |
+| **Submit Investigation Notes** | ❌ | ✅ Yes | ❌ |
+| **Submit Analyst Recommendation** | ❌ (Read-Only) | ✅ (Approve / Reject) | ❌ |
+| **Final Order Approval / Rejection** | ❌ (Read-Only) | ❌ (Recommendation Only) | ✅ **FINAL DECISION AUTONOMY** |
+| **Manage Merchant Accounts** | ✅ (Create / Enable / Disable) | ❌ | ❌ |
+| **Configure System Settings** | ✅ (Thresholds & Weights) | ❌ | ❌ |
+
+> [!IMPORTANT]
+> **Autonomy Division**: Security Analysts conduct investigations and issue non-binding recommendations. Only the **Merchant** owning the order (`seller_id`) can make the final binding decision to **Approve Order** or **Reject Order**. Admin oversight is read-only for transaction decisions.
+
+---
+
+## 🛒 Multi-Merchant Marketplace Workflow & Data Isolation
+
+TrustGraph AI isolates merchant transaction logs, reviews, statistics, and notifications by `seller_id`. 
+
+### Supported Demo Merchant Accounts
+
+- **Apple Store** (`apple@trustgraph.ai` | `SELL_APPLE_STORE`)
+- **Dell Store** (`dell@trustgraph.ai` | `SELL_DELL_STORE`)
+- **HP Store** (`hp@trustgraph.ai` | `SELL_HP_STORE`)
+- **Fashion Store** (`fashion@trustgraph.ai` | `SELL_FASHION_STORE`)
+- **Apex Retailers** (`merchant@trustgraph.ai` | `SELL_APEX_STORE`)
+
+```
+[ Incoming Order ] ---> (seller_id: SELL_APPLE_STORE)
+                                |
+             +------------------+------------------+
+             |                                     |
+    [ Apple Merchant Dashboard ]          [ Dell Merchant Dashboard ]
+    - Total Orders: 6                     - Total Orders: 6
+    - Approved: 3                         - Approved: 6
+    - Flagged: 4                          - Flagged: 0
+    - Data Isolated (Apple Only)          - Data Isolated (Dell Only)
+```
+
+---
+
+## 🕸 Hierarchical Fraud Investigation Graph
+
+To eliminate chaotic force-directed layouts, TrustGraph AI visualizes transaction relationships using a **fixed 4-tier hub-and-spoke investigation graph**:
+
+```mermaid
+graph TD
+    L0["Level 0: Buyer Account (Customer)"]
+    L1["Level 1: Central Selected Transaction"]
+    
+    L2_Prod["Product"]
+    L2_Merch["Merchant"]
+    L2_IP["IP Address"]
+    L2_Dev["Device ID"]
+    L2_Bill["Billing Address"]
+    L2_Ship["Shipping Address"]
+
+    L3_UserA["Shared Account A"]
+    L3_UserB["Shared Account B"]
+
+    L0 -->|placed order| L1
+    L1 -->|product| L2_Prod
+    L1 -->|seller| L2_Merch
+    L1 -->|customer IP| L2_IP
+    L1 -->|device| L2_Dev
+    L1 -->|billing| L2_Bill
+    L1 -->|shipping| L2_Ship
+
+    L2_IP -.->|shared with| L3_UserA
+    L2_Dev -.->|shared with| L3_UserB
+
+    classDef shared stroke:#ef4444,stroke-dasharray: 5 5;
+    class L3_UserA,L3_UserB shared;
+```
+
+### Graph Layers & Edge Labels
+
+- **Level 0 (Top)**: Buyer Customer Node (`placed order` $\rightarrow$ Central Transaction)
+- **Level 1 (Center)**: Focal Transaction Card (Displays Transaction ID, Risk Score, Status)
+- **Level 2 (Attribute Ring)**: Product (`product`), Merchant (`seller`), Customer IP (`customer IP`), Device ID (`device`), Billing Address (`billing`), Shipping Address (`shipping`)
+- **Level 3 (Collusion Ring)**: Secondary buyer accounts linked via shared attributes (`shared with` rendered with **Red Dashed Edges**)
+
+---
+
+## 🔍 Explainable AI (XAI) Risk Engine
+
+The `HybridRiskEngine` calculates a dynamic score from `0.0` to `100.0%` by evaluating three weighted pillars:
+
+```python
+combined_score = (w_rule * rule_score) + (w_xgb * history_score) + (w_graph * sharing_score)
+```
+
+1. **Rule-Based Heuristics (`rule_score`)**:
+   - Billing & Shipping Address Mismatch: `+25%`
+   - High Amount ($ > \$2,000$): `+30%` | Moderate Amount ($ > \$500$): `+15%`
+   - Rapid Velocity Spikes ($> 4$ recent requests): `+25%`
+   - High-Risk Category (`electronics`, `crypto`, `gift_cards`, `luxury_goods`): `+20%`
+2. **Relational Attribute Sharing (`sharing_score`)**:
+   - Shared Device ID with other users: `+30%` per user (up to `50%`)
+   - Shared IP Address with other users: `+30%` per user (up to `40%`)
+   - Shared Shipping Address with other users: `+20%` per user (up to `30%`)
+3. **NetworkX Collusion Score (`graph_score`)**:
+   - Evaluates multi-hop graph degree centrality and collusion risk.
+
+---
+
+## 🔄 End-to-End Investigation & Review Workflow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer as External Buyer (Metadata)
+    participant Engine as Hybrid Risk Engine
+    actor Analyst as Security Analyst
+    actor Merchant as Merchant (Store Owner)
+    participant WS as WebSocket Service
+
+    Customer->>Engine: Submit New Order / Transaction
+    Engine->>Engine: Calculate Risk Score & Flag High Risk
+    Engine-->>Analyst: Populate Fraud Reviews Queue
+    Analyst->>Analyst: Inspect Fraud Score, XAI Factors & 4-Tier Graph
+    Analyst->>Merchant: Submit Notes & Recommendation (Approve / Reject)
+    WS-->>Merchant: Real-Time WebSocket Notification Triggered
+    Merchant->>Merchant: Review Analyst Report & Graph Collusion Evidence
+    Merchant->>Engine: Submit Final Order Decision (Approve / Reject Order)
+    Engine->>Engine: Update Final Order Status & Clear Flagged State
+```
+
+---
+
+## ⚡ Targeted Real-Time WebSocket Notifications
+
+TrustGraph AI runs a dedicated WebSocket server (`/ws`). When an analyst completes an investigation recommendation or a new alert is generated, notifications are broadcasted live to connected merchant dashboards based on `seller_id` data isolation.
+
+---
+
+## 📊 Role-Specific Dashboards
+
+- **Admin Dashboard**: Global marketplace transaction volume, total approved/blocked counts, system risk distribution, and merchant account management.
+- **Analyst Dashboard**: Flagged transactions queue, risk score progress bars, XAI factor breakdowns, NetworkX graph canvas, and recommendation forms.
+- **Merchant Dashboard**: Strictly scoped to `current_user.seller_id` displaying:
+  - Total Orders
+  - Approved Orders
+  - Blocked Orders
+  - Pending Reviews
+  - Flagged Orders
+  - Store Approval Rate (`%`)
+  - Store Fraud Rate (`%`)
+  - Revenue at Risk (`$`)
+
+---
+
+## 🛠 Technology Stack
+
+| Component | Technology | Details |
 | :--- | :--- | :--- |
-| **Backend** | Python 3.10+, FastAPI | Web API routing and asynchronous endpoints |
-| **Database** | SQLite (dev) / PostgreSQL (prod) | Relational database mapping using SQLAlchemy ORM |
-| **Analysis** | NetworkX, NumPy, Scikit-Learn | Attribute sharing analysis and prototype fraud scoring heuristics |
-| **Frontend** | React 19, TypeScript, Vite | User interface development framework |
-| **Styling** | Tailwind CSS v4, Lucide Icons | Responsive layout styling and icon set |
-| **Visuals** | Recharts, HTML5 Canvas | Analytics graphs and custom physics-based node graph visualizer |
-| **Containers** | Docker & Docker Compose | Containerized execution environment |
+| **Frontend Core** | React 19, TypeScript, Vite | Single-page application architecture |
+| **Frontend Styling** | Tailwind CSS v4, Lucide Icons | Glassmorphic dark theme, responsive components |
+| **Charts & Visuals** | Recharts, HTML5 Canvas 2D | Financial trend charts & 4-tier graph engine |
+| **Backend Framework** | Python 3.10+, FastAPI | Asynchronous REST APIs & WebSocket broker |
+| **ORM & Database** | SQLAlchemy, PostgreSQL / SQLite | SQLite for local dev, PostgreSQL for production |
+| **Graph & ML Engine** | NetworkX, NumPy, Scikit-Learn, XGBoost | Relational sharing & graph collusion analysis |
+| **Authentication** | OAuth2 Password Bearer, PyJWT | JWT access tokens & passlib bcrypt hashing |
+| **Cloud Deployment** | Vercel (Frontend), Render (Backend & DB)| Production multi-region cloud deployment |
 
 ---
 
-## Installation & Setup
+## 📁 Repository Structure
+
+```
+TrustGraph-AI/
+├── backend/
+│   ├── app/
+│   │   ├── api/          # FastAPI REST Routers (auth, transactions, appeals, graph, admin)
+│   │   ├── core/         # Security, JWT, config, notifications
+│   │   ├── db/           # SQLAlchemy session & database engines
+│   │   ├── models/       # Database ORM Models (User, Transaction, Appeal, Alert, FraudScore)
+│   │   ├── schemas/      # Pydantic validation schemas
+│   │   └── services/     # HybridRiskEngine, GraphAnalyzer, db_seeder
+│   ├── main.py           # FastAPI Application Entrypoint & /ws endpoint
+│   ├── requirements.txt  # Python Dependencies
+│   └── seed_demo_fraud.py # High-risk fraud demo seeder script
+├── frontend/
+│   ├── src/
+│   │   ├── components/   # UI StatCards, GraphVisualizer, Sidebar, Modals
+│   │   ├── context/      # AuthContext & AlertContext (WebSockets)
+│   │   ├── pages/        # Dashboard, Transactions, Appeals, Admin, Login
+│   │   ├── services/     # Axios API service
+│   │   └── types/        # TypeScript interfaces
+│   ├── package.json      # Node.js dependencies
+│   ├── vercel.json       # Vercel SPA Routing Configuration
+│   └── vite.config.ts    # Vite build configuration
+├── .env.example          # Safe environment variables template
+├── docker-compose.yml    # Docker Compose local stack setup
+├── render.yaml           # Render Infrastructure-as-Code spec
+└── README.md             # Project documentation
+```
+
+---
+
+## 🌐 API Endpoint Reference
+
+Documentation is automatically served via OpenAPI / Swagger at `/docs`.
+
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/v1/auth/login` | Public | Authenticate user and issue JWT token |
+| `GET` | `/api/v1/auth/me` | Authenticated | Fetch current user profile & merchant metadata |
+| `GET` | `/api/v1/transactions/` | Authenticated | List transactions (Filtered by `seller_id` for merchants) |
+| `POST` | `/api/v1/transactions/` | Authenticated | Submit new transaction for real-time risk scoring |
+| `GET` | `/api/v1/appeals/` | Authenticated | List fraud reviews & investigation queue |
+| `PUT` | `/api/v1/appeals/{id}` | Analyst / Merchant | Submit analyst recommendation or merchant final decision |
+| `GET` | `/api/v1/graph/transaction/{code}` | Authenticated | Fetch 4-tier hierarchical graph network for transaction |
+| `GET` | `/api/v1/admin/stats` | Authenticated | Fetch dashboard statistics (Data-isolated for merchants) |
+| `POST` | `/api/v1/admin/merchants` | Admin Only | Create new merchant store account |
+| `GET` | `/health` | Public | Service health check (`{"status": "ok"}`) |
+| `WS` | `/ws` | Authenticated | Live WebSocket alert & notification channel |
+
+---
+
+## 🧪 Demo Data Seeding & Hackathon Script
+
+TrustGraph AI includes a non-destructive demo seeder script (`backend/seed_demo_fraud.py`) that generates 5 customer transactions sharing suspicious network credentials (`DEMO_SHARED_DEVICE_001`, `10.99.99.50`, `999 Demo Street`).
+
+### Seed Demo Transactions
+
+```powershell
+# Run against local database:
+python backend/seed_demo_fraud.py
+
+# Run against Render PostgreSQL database:
+$env:DATABASE_URL="postgresql://user:password@host.render.com:5432/dbname"; python backend/seed_demo_fraud.py
+```
+
+### Seeder Output Example
+
+```text
+===========================================================================
+  TRUSTGRAPH AI - HIGH-RISK DEMO FRAUD DATA SEEDER  
+===========================================================================
+[CREATED] ID: TRX_DEMO_FRAUD_01  | Email: demo.fraud01@trustgraph.demo | Fraud Score:  30.0% | Risk: MEDIUM   | Status: APPROVED
+[CREATED] ID: TRX_DEMO_FRAUD_02  | Email: demo.fraud02@trustgraph.demo | Fraud Score:  54.0% | Risk: MEDIUM   | Status: FLAGGED
+[CREATED] ID: TRX_DEMO_FRAUD_03  | Email: demo.fraud03@trustgraph.demo | Fraud Score:  60.0% | Risk: HIGH     | Status: FLAGGED
+[CREATED] ID: TRX_DEMO_FRAUD_04  | Email: demo.fraud04@trustgraph.demo | Fraud Score:  60.0% | Risk: HIGH     | Status: FLAGGED
+[CREATED] ID: TRX_DEMO_FRAUD_05  | Email: demo.fraud05@trustgraph.demo | Fraud Score:  60.0% | Risk: HIGH     | Status: FLAGGED
+---------------------------------------------------------------------------
+Summary: Created 5 demo transactions, Skipped 0 existing.
+===========================================================================
+```
+
+---
+
+## 💻 Local Installation & Setup
 
 ### Prerequisites
-
 - Python 3.10+
 - Node.js 18+
-- Git
 
-### Clone the Repository
-
-```bash
-git clone https://github.com/raghavendra3107/TrustGraph-AI.git
-cd TrustGraph-AI
-```
-
-### Backend
-
+### 1. Backend Setup
 ```bash
 cd backend
+python -m venv venv
+# On Windows:
+venv\Scripts\activate
+# On Linux/macOS:
+source venv/bin/activate
+
 pip install -r requirements.txt
-uvicorn main:app --reload
+python -m uvicorn main:app --reload --port 8001
 ```
 
-### Frontend
-
+### 2. Frontend Setup
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-
-### Access the Application
-
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:8000
-
-## Demo Credentials & Profiles
-
-On initial database creation, seed values are injected. You can log in using these roles:
-
-| Account Type | Email | Password | Role Description |
-| :--- | :--- | :--- | :--- |
-| **System Admin** | `admin@trustgraph.ai` | `admin123` | Adjust thresholds, configure engine weights |
-| **Security Analyst** | `analyst@trustgraph.ai` | `analyst123` | Inspect transactions, view collusion graph, decide disputes |
-| **Partner Merchant** | `merchant@trustgraph.ai` | `merchant123` | Create transaction logs, inspect dispute outcomes |
+Open `http://localhost:5173` in your browser.
 
 ---
 
-## Current Progress
+## ☁️ Cloud Deployment Configuration
 
-### Completed
-- [x] Project Planning
-- [x] Repository Setup & Git Initialisation
-- [x] Backend Structure (Directory layout, initial FastAPI setup)
-- [x] Frontend Structure (Vite, React boilerplate setup)
-- [x] README Documentation
-- [x] Basic UI (Login page, Sidebar templates)
+### Production Architecture
+- **Frontend**: Deployed on **Vercel**
+- **Backend**: Deployed on **Render Web Service**
+- **Database**: Deployed on **Render PostgreSQL**
 
-### In Progress
-- [/] Fraud Detection Logic (Refining rules engine weights)
-- [/] Graph Analysis (Integrating NetworkX attribute overlapping queries)
-- [/] Dashboard Integration (Hooking metrics to API endpoints)
-- [/] Database Integration (Resolving schema mapping rules)
+### Environment Variables
 
-### Upcoming
-- [ ] Machine Learning Model training and integration
-- [ ] Authentication Improvements (OAuth/JWT improvements)
-- [ ] Deployment and hosting scripts
+#### Backend (Render Dashboard)
+```env
+DATABASE_URL=postgresql://user:password@hostname:5432/trustgraph
+SECRET_KEY=your_production_secret_key_here
+FRONTEND_URL=https://your-app.vercel.app
+BACKEND_CORS_ORIGINS=https://your-app.vercel.app
+```
 
----
-
-## Team & Hackathon Context
-
-**Project Name**
-TrustGraph AI
-
-**Hackathon**
-AI Build Hackathon 2026
-
-**Team Members**
-- Nandipati Raghavendra
-- Palle Prabhas
-- Sowmya Sri
+#### Frontend (Vercel Project Settings)
+```env
+VITE_API_URL=https://your-backend.onrender.com/api/v1
+VITE_WS_URL=wss://your-backend.onrender.com/ws
+```
 
 ---
 
+## 🧪 Verification Commands
+
+### Build Verification
+```bash
+# Frontend Compilation Check
+cd frontend && npm run build
+
+# Backend Import & Service Check
+cd backend && python -c "import main"
+```
+
+### API Verification
+- Health Endpoint: `GET /health` $\rightarrow$ `{"status": "ok"}`
+- Interactive Docs: `GET /docs` $\rightarrow$ Swagger UI
+
+---
+
+## 🏆 Hackathon Value & Key Differentiators
+
+1. **Explainable AI (XAI)**: Breaks down fraud scores into human-readable heuristic factors instead of black-box numbers.
+2. **Graph Collusion Discovery**: Uncovers multi-account fraud rings sharing hidden devices, IP addresses, and physical addresses.
+3. **Multi-Merchant Data Isolation**: Solves real-world marketplace privacy by strictly isolating merchant order volumes while retaining centralized fraud analysis.
+4. **Analyst-to-Merchant Collaborative Decisioning**: Bridges security operations and merchant store owners through non-binding recommendations and merchant decision autonomy.
