@@ -21,70 +21,76 @@ By unifying rule-based heuristics, explainable AI (XAI) risk scoring, relational
 
 ```mermaid
 flowchart TD
-    A["Customer Places Order"] --> B["Transaction Validation"]
 
-    B --> C["Customer & Transaction History"]
+    A["Customer Places Order"]
+    B["Validate Transaction Details"]
+    C["Check Customer & Transaction History"]
+    D["Fraud Risk Engine"]
+    E["Fraud Risk Score<br/>0 - 100"]
+    F{"Risk Level"}
 
-    C --> D["Fraud Risk Engine"]
-
-    D --> E["Fraud Risk Score<br/>0 - 100"]
-
-    E --> F{"Risk Level"}
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
 
     F -->|"Low Risk"| G["Continue Transaction"]
+    F -->|"Medium Risk"| H["Additional Verification / Review"]
+    F -->|"High Risk"| I["Create Fraud Investigation"]
 
-    F -->|"High Risk"| H["Create Fraud Investigation"]
+    H --> J["Security Analyst Review"]
 
-    H --> I["Investigation Graph"]
+    I --> K["Investigation Graph"]
 
-    I --> J["Analyze Shared Identifiers"]
+    K --> L["Analyze Shared Identifiers"]
 
-    J --> J1["IP Address"]
-    J --> J2["Device ID"]
-    J --> J3["Billing Address"]
-    J --> J4["Shipping Address"]
+    L --> L1["Product"]
+    L --> L2["Merchant"]
+    L --> L3["Customer IP"]
+    L --> L4["Device ID"]
+    L --> L5["Billing Address"]
+    L --> L6["Shipping Address"]
 
-    J1 --> K["Identify Related Customers"]
-    J2 --> K
-    J3 --> K
-    J4 --> K
+    L3 --> M["Identify Related Customers"]
+    L4 --> M
+    L5 --> M
+    L6 --> M
 
-    K --> L["Security Analyst Investigation"]
+    M --> N["Shared IP / Device / Address Detection"]
 
-    L --> M["Fraud Reasons & Risk Analysis"]
+    N --> J
 
-    M --> N["Analyst Notes & Recommendation"]
+    J --> O["Fraud Reasons & Risk Analysis"]
+    O --> P["Analyst Notes"]
+    P --> Q["Analyst Recommendation"]
 
-    N --> O["Relevant Merchant"]
+    Q --> R["Relevant Merchant"]
 
-    O --> P{"Merchant Final Decision"}
+    R --> S{"Merchant Final Decision"}
 
-    P -->|"Approve"| Q["Approved Order"]
+    S -->|"Approve"| T["Approved Order"]
+    S -->|"Reject"| U["Blocked Order"]
 
-    P -->|"Reject"| R["Blocked Order"]
+    G --> V["Transaction Completed"]
+    T --> V
+    U --> W["Fraud Case Closed"]
 
-    G --> S["Transaction Completed"]
-
-    Q --> S
-
-    R --> T["Fraud Case Closed"]
-
-    classDef start fill:#2563eb,color:#fff,stroke:#1d4ed8
-    classDef process fill:#1e293b,color:#fff,stroke:#475569
-    classDef risk fill:#dc2626,color:#fff,stroke:#991b1b
-    classDef decision fill:#7c3aed,color:#fff,stroke:#6d28d9
-    classDef success fill:#059669,color:#fff,stroke:#047857
-    classDef danger fill:#dc2626,color:#fff,stroke:#991b1b
+    classDef start fill:#2563eb,color:#fff,stroke:#1d4ed8,stroke-width:2px
+    classDef process fill:#1e293b,color:#fff,stroke:#475569,stroke-width:2px
+    classDef risk fill:#dc2626,color:#fff,stroke:#991b1b,stroke-width:2px
+    classDef decision fill:#7c3aed,color:#fff,stroke:#6d28d9,stroke-width:2px
+    classDef success fill:#059669,color:#fff,stroke:#047857,stroke-width:2px
+    classDef danger fill:#dc2626,color:#fff,stroke:#991b1b,stroke-width:2px
 
     class A start
-    class B,C,D,I,J,J1,J2,J3,J4,K,L,M,N,O process
-    class E,H risk
-    class F,P decision
-    class G,Q,S success
-    class R,T danger
+    class B,C,D,K,L,L1,L2,L3,L4,L5,L6,M,N,J,O,P,Q,R,H process
+    class E,I risk
+    class F,S decision
+    class G,T,V success
+    class U,W danger
 
-    ---
-
+---
 ## 🚀 Key Innovation & Platform Architecture
 
 ```mermaid
