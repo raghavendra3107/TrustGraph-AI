@@ -35,37 +35,61 @@ class GraphAnalyzer:
     @classmethod
     def _build_entity_graph(cls, transactions: List[Transaction]) -> nx.Graph:
         """
-        Build a NetworkX graph with Customer, Transaction, Device, IP, and Shipping Address nodes.
-        Adds customer-to-customer edges when they share device, IP, or shipping address.
+        Build a NetworkX graph with Customer, Transaction, Product, Merchant, Device, IP, 
+        Billing Address, and Shipping Address nodes.
+        Adds direct links between shared identifier nodes and connected customer accounts.
         """
         G = nx.Graph()
         device_customers: Dict[str, Set[str]] = {}
         ip_customers: Dict[str, Set[str]] = {}
         shipping_customers: Dict[str, Set[str]] = {}
+        billing_customers: Dict[str, Set[str]] = {}
 
         for tx in transactions:
             cust_id = cls._customer_node_id(tx.user_email)
             tx_id = f"TX_{tx.transaction_id}"
             dev_id = f"DEV_{tx.device_id}"
             ip_id = f"IP_{tx.ip_address}"
-            ship_id = cls._address_node_id(tx.shipping_address)
+            ship_id = cls._address_node_id(tx.shipping_address, "SHIP")
+            bill_id = cls._address_node_id(tx.billing_address, "BILL") if tx.billing_address else None
+            
+            prod_name = getattr(tx, "product_name", None) or "Standard Item"
+            seller_name = getattr(tx, "seller_name", None) or getattr(tx, "seller_id", None) or "Apex Store"
+            seller_id = getattr(tx, "seller_id", None) or "SELL_APEX_STORE"
+            
+            prod_id = f"PROD_{prod_name.replace(' ', '_')}"
+            merch_id = f"MERCH_{seller_id}"
 
-            cls._add_nx_node(G, tx_id, "transaction", f"Tx {tx.transaction_id}", tx.fraud_score)
+            cls._add_nx_node(G, tx_id, "transaction", f"TX {tx.transaction_id}", tx.fraud_score)
             cls._add_nx_node(G, cust_id, "customer", tx.user_email, tx.fraud_score * 0.8)
-            cls._add_nx_node(G, dev_id, "device", f"Device: {tx.device_id[:8]}", tx.fraud_score * 0.85)
+            cls._add_nx_node(G, dev_id, "device", tx.device_id, tx.fraud_score * 0.85)
             cls._add_nx_node(G, ip_id, "ip", tx.ip_address, tx.fraud_score * 0.9)
             cls._add_nx_node(
                 G,
                 ship_id,
                 "address",
-                f"Ship: {tx.shipping_address[:20]}...",
+                f"Ship: {tx.shipping_address[:22]}...",
                 tx.fraud_score * 0.75,
             )
+            if bill_id:
+                cls._add_nx_node(
+                    G,
+                    bill_id,
+                    "address",
+                    f"Bill: {tx.billing_address[:22]}...",
+                    tx.fraud_score * 0.75,
+                )
+            cls._add_nx_node(G, prod_id, "product", prod_name, 0.0)
+            cls._add_nx_node(G, merch_id, "merchant", seller_name, 0.0)
 
-            G.add_edge(cust_id, tx_id, label="ordered")
-            G.add_edge(tx_id, dev_id, label="used_device")
-            G.add_edge(tx_id, ip_id, label="routed_from")
-            G.add_edge(tx_id, ship_id, label="shipped_to")
+            G.add_edge(cust_id, tx_id, label="placed order", weight=1.0)
+            G.add_edge(tx_id, prod_id, label="product", weight=1.0)
+            G.add_edge(tx_id, merch_id, label="merchant", weight=1.0)
+            G.add_edge(tx_id, ip_id, label="customer IP", weight=1.0)
+            G.add_edge(tx_id, dev_id, label="device", weight=1.0)
+            G.add_edge(tx_id, ship_id, label="shipping address", weight=1.0)
+            if bill_id:
+                G.add_edge(tx_id, bill_id, label="billing address", weight=1.0)
 
             if tx.device_id:
                 device_customers.setdefault(tx.device_id, set()).add(tx.user_email)
@@ -73,12 +97,25 @@ class GraphAnalyzer:
                 ip_customers.setdefault(tx.ip_address, set()).add(tx.user_email)
             if tx.shipping_address:
                 shipping_customers.setdefault(tx.shipping_address.strip().lower(), set()).add(tx.user_email)
+            if tx.billing_address:
+                billing_customers.setdefault(tx.billing_address.strip().lower(), set()).add(tx.user_email)
 
-        def link_shared_customers(email_groups: Dict[str, Set[str]], edge_label: str) -> None:
-            for emails in email_groups.values():
+        # Connect customer nodes to shared identifier nodes and customer-to-customer for collusion
+        def link_shared_identifier_nodes(email_groups: Dict[str, Set[str]], node_prefix_fn, edge_label: str) -> None:
+            for key, emails in email_groups.items():
                 email_list = sorted(emails)
                 if len(email_list) < 2:
                     continue
+                target_node = node_prefix_fn(key)
+                for email in email_list:
+                    c_id = cls._customer_node_id(email)
+                    if G.has_node(c_id) and G.has_node(target_node):
+                        if not G.has_edge(c_id, target_node):
+                            G.add_edge(c_id, target_node, label=edge_label, weight=2.0)
+                        else:
+                            G[c_id][target_node]["label"] = edge_label
+
+                # Also add customer-to-customer edges for legacy graph algorithms
                 for i in range(len(email_list)):
                     for j in range(i + 1, len(email_list)):
                         c1 = cls._customer_node_id(email_list[i])
@@ -93,9 +130,10 @@ class GraphAnalyzer:
                             else:
                                 G.add_edge(c1, c2, label=edge_label, weight=1.5)
 
-        link_shared_customers(device_customers, "shared_device")
-        link_shared_customers(ip_customers, "shared_ip")
-        link_shared_customers(shipping_customers, "shared_shipping_address")
+        link_shared_identifier_nodes(device_customers, lambda d: f"DEV_{d}", "shared device")
+        link_shared_identifier_nodes(ip_customers, lambda ip: f"IP_{ip}", "shared IP")
+        link_shared_identifier_nodes(shipping_customers, lambda s: cls._address_node_id(s, "SHIP"), "shared shipping address")
+        link_shared_identifier_nodes(billing_customers, lambda b: cls._address_node_id(b, "BILL"), "shared billing address")
 
         return G
 

@@ -18,9 +18,9 @@ export const Sidebar: React.FC = () => {
 
   const navItems = [
     { to: '/', label: 'Dashboard', icon: <LayoutDashboard size={18} />, roles: ['admin', 'analyst', 'merchant'] },
-    { to: '/transactions', label: 'Fraud Detection', icon: <ShieldAlert size={18} />, roles: ['admin', 'analyst', 'merchant'] },
-    { to: '/appeals', label: 'Appeals', icon: <FileText size={18} />, roles: ['admin', 'analyst', 'merchant'] },
-    { to: '/admin', label: 'Admin panel', icon: <Settings size={18} />, roles: ['admin'] },
+    { to: '/transactions', label: user?.role === 'merchant' ? 'My Orders' : 'Fraud Detection', icon: <ShieldAlert size={18} />, roles: ['admin', 'analyst', 'merchant'] },
+    { to: '/appeals', label: 'Fraud Reviews', icon: <FileText size={18} />, roles: ['admin', 'analyst', 'merchant'] },
+    { to: '/admin', label: 'Admin Control', icon: <Settings size={18} />, roles: ['admin'] },
   ];
 
   const allowedNavItems = navItems.filter(item => user && item.roles.includes(user.role));
@@ -88,20 +88,48 @@ export const Sidebar: React.FC = () => {
         </nav>
       </div>
 
-      <div className="p-6 border-t border-slate-800/60 bg-slate-950/40">
+      <div className="p-5 border-t border-slate-800/60 bg-slate-950/40">
         {user && (
-          <div className="flex items-center gap-3.5 mb-5">
-            <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center border border-slate-700 font-bold text-blue-400 uppercase">
-              {user.email.substring(0, 2)}
+          <div className="mb-4">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center border border-slate-700 font-bold text-blue-400 uppercase text-xs">
+                {user.role === 'admin' ? 'AD' : user.role === 'analyst' ? 'SA' : user.email.substring(0, 2)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-slate-100 truncate">
+                  {user.role === 'admin' 
+                    ? (user.full_name || 'System Administrator')
+                    : user.role === 'analyst'
+                      ? (user.full_name || 'Security Analyst')
+                      : (user.seller_name || user.full_name || user.email)}
+                </p>
+                <div className="mt-0.5">
+                  <span className={`inline-block text-[9px] font-extrabold uppercase px-2 py-0.5 rounded tracking-wider border ${
+                    user.role === 'admin' 
+                      ? 'bg-purple-500/10 text-purple-400 border-purple-500/30' 
+                      : user.role === 'analyst'
+                        ? 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+                        : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                  }`}>
+                    {user.role === 'analyst' ? 'SECURITY ANALYST' : user.role.toUpperCase()}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-slate-200 truncate">
-                {user.full_name || user.email}
-              </p>
-              <span className="inline-block mt-1 text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                {user.role}
-              </span>
-            </div>
+
+            {/* Merchant Store & Seller ID Display */}
+            {user.role === 'merchant' && user.seller_id && (
+              <div className="mt-2.5 pt-2 border-t border-slate-800/40 text-[10px] space-y-1 text-slate-400">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Store:</span>
+                  <span className="font-semibold text-slate-200 truncate">{user.seller_name || 'Merchant Store'}</span>
+                </div>
+                <div className="flex justify-between font-mono">
+                  <span className="text-slate-500">Seller ID:</span>
+                  <span className="text-blue-400 font-semibold">{user.seller_id}</span>
+                </div>
+              </div>
+            )}
           </div>
         )}
         

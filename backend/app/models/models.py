@@ -12,6 +12,10 @@ class User(Base):
     full_name = Column(String, nullable=True)
     role = Column(String, default="analyst")  # admin, analyst, merchant
     is_active = Column(Boolean, default=True)
+    seller_id = Column(String, nullable=True, index=True)
+    seller_name = Column(String, nullable=True)
+    assigned_category = Column(String, nullable=True)
+    seller_location = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 class Transaction(Base):
@@ -23,6 +27,12 @@ class Transaction(Base):
     amount = Column(Float, nullable=False)
     currency = Column(String, default="USD")
     merchant_category = Column(String, nullable=False)
+    product_name = Column(String, nullable=True, default="Standard Product")
+    product_category = Column(String, nullable=True, default="Electronics")
+    seller_name = Column(String, nullable=True, default="Standard Store")
+    customer_id = Column(String, nullable=True, default="CUST-1001")
+    customer_location = Column(String, nullable=True, default="Hyderabad, India")
+    seller_location = Column(String, nullable=True, default="Cupertino, USA")
     transaction_time = Column(DateTime, default=datetime.datetime.utcnow)
     ip_address = Column(String, nullable=False)
     device_id = Column(String, nullable=False)
@@ -54,6 +64,15 @@ class Appeal(Base):
     reason = Column(Text, nullable=False)
     status = Column(String, default="pending")  # pending, approved, rejected
     analyst_feedback = Column(Text, nullable=True)
+    
+    # New fields for marketplace workflow
+    investigation_status = Column(String, default="pending")  # pending, recommended_approve, recommended_reject
+    investigation_notes = Column(Text, nullable=True)
+    analyst_recommendation = Column(String, nullable=True)
+    merchant_final_decision = Column(String, nullable=True)
+    merchant_decision_timestamp = Column(DateTime, nullable=True)
+    final_order_status = Column(String, nullable=True)
+    
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
     

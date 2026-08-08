@@ -1,9 +1,9 @@
 import axios from 'axios';
 import type { 
-  User, Transaction, Appeal, Alert, GraphData, DashboardStats 
+  User, Transaction, Appeal, Alert, GraphData, DashboardStats, MerchantCreateData, MerchantUpdateData
 } from '../types';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001/api/v1';
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -77,8 +77,8 @@ export const appealService = {
     return response.data;
   },
   
-  update: async (id: number, decision: { status: 'approved' | 'rejected'; analyst_feedback: string }) => {
-    const response = await api.put<Appeal>(`/appeals/${id}`, decision);
+  update: async (id: number, data: Partial<Appeal>) => {
+    const response = await api.put<Appeal>(`/appeals/${id}`, data);
     return response.data;
   },
 };
@@ -108,6 +108,21 @@ export const adminService = {
   
   resolveAlert: async (id: number) => {
     const response = await api.put<Alert>(`/admin/alerts/${id}/resolve`);
+    return response.data;
+  },
+
+  getMerchants: async () => {
+    const response = await api.get<User[]>('/admin/merchants');
+    return response.data;
+  },
+
+  createMerchant: async (merchantData: MerchantCreateData) => {
+    const response = await api.post<User>('/admin/merchants', merchantData);
+    return response.data;
+  },
+
+  updateMerchant: async (id: number, merchantData: MerchantUpdateData) => {
+    const response = await api.put<User>(`/admin/merchants/${id}`, merchantData);
     return response.data;
   },
 };

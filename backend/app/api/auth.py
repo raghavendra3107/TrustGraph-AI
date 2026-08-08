@@ -86,4 +86,18 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
 @router.get("/me", response_model=UserResponse)
 def read_users_me(current_user: User = Depends(get_current_user)):
+    if current_user.role == "merchant":
+        if not current_user.seller_id or not current_user.seller_name:
+            seller_map = {
+                "apple@trustgraph.ai": ("SELL_APPLE_STORE", "Apple Store"),
+                "dell@trustgraph.ai": ("SELL_DELL_STORE", "Dell Store"),
+                "hp@trustgraph.ai": ("SELL_HP_STORE", "HP Store"),
+                "fashion@trustgraph.ai": ("SELL_FASHION_STORE", "Fashion Store"),
+                "merchant@trustgraph.ai": ("SELL_APEX_STORE", "Apex Store"),
+            }
+            s_id, s_name = seller_map.get(current_user.email, ("SELL_APEX_STORE", "Apex Store"))
+            if not current_user.seller_id:
+                current_user.seller_id = s_id
+            if not current_user.seller_name:
+                current_user.seller_name = s_name
     return current_user

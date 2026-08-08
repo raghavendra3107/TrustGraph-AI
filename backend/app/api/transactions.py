@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.db.session import get_db
-from app.models.models import Transaction, Alert, User, FraudScore
+from app.models.models import Transaction, Alert, User, FraudScore, Appeal
 from app.schemas.schemas import TransactionCreate, TransactionResponse
 from app.api.auth import get_current_user
 from app.services.fraud import fraud_classifier
@@ -10,6 +10,11 @@ from app.core.notifications import notification_manager
 import datetime
 
 router = APIRouter()
+
+def get_merchant_seller_id(email: str) -> str:
+    if email == "merchant@trustgraph.ai":
+        return "SELL_APEX_STORE"
+    return "SELL_APEX_STORE"
 
 @router.get("/", response_model=List[TransactionResponse])
 def read_transactions(
@@ -23,12 +28,19 @@ def read_transactions(
 ):
     query = db.query(Transaction)
     
+    # Apply RBAC filters
+    if current_user.role == "merchant":
+        seller_id = current_user.seller_id or get_merchant_seller_id(current_user.email)
+        query = query.filter(Transaction.seller_id == seller_id)
+    else:
+        # Admins and Analysts see all transactions, with optional user_email filtering
+        if user_email:
+            query = query.filter(Transaction.user_email == user_email)
+            
     if status:
         query = query.filter(Transaction.status == status)
     if is_flagged is not None:
         query = query.filter(Transaction.is_flagged == is_flagged)
-    if user_email:
-        query = query.filter(Transaction.user_email == user_email)
         
     return query.order_by(Transaction.transaction_time.desc()).offset(offset).limit(limit).all()
 
@@ -41,6 +53,12 @@ def read_transaction(
     tx = db.query(Transaction).filter(Transaction.id == tx_id).first()
     if not tx:
         raise HTTPException(status_code=404, detail="Transaction not found")
+        
+    # Check permissions
+    user_seller_id = current_user.seller_id or get_merchant_seller_id(current_user.email)
+    if current_user.role == "merchant" and tx.seller_id != user_seller_id:
+        raise HTTPException(status_code=403, detail="Not authorized to view this transaction")
+        
     return tx
 
 @router.post("/", response_model=TransactionResponse, status_code=201)
@@ -92,6 +110,12 @@ async def create_transaction(
         amount=tx_in.amount,
         currency=tx_in.currency,
         merchant_category=tx_in.merchant_category,
+        product_name=tx_in.product_name or "Standard Product",
+        product_category=tx_in.product_category or tx_in.merchant_category,
+        seller_name=tx_in.seller_name or "Standard Store",
+        customer_id=tx_in.customer_id or "CUST-1001",
+        customer_location=tx_in.customer_location or "Hyderabad, India",
+        seller_location=tx_in.seller_location or "Cupertino, USA",
         ip_address=tx_in.ip_address,
         device_id=tx_in.device_id,
         card_hash=tx_in.card_hash,
@@ -133,6 +157,17 @@ async def create_transaction(
         db.add(alert)
         db.commit()
         db.refresh(alert)
+
+        # Automatically create review entry (Appeal) for flagged high-risk transactions
+        review = Appeal(
+            transaction_id=tx.id,
+            user_email=tx.user_email,
+            reason=f"System flagged: Fraud score {fraud_score}% exceeds threshold.",
+            status="pending",
+            investigation_status="pending"
+        )
+        db.add(review)
+        db.commit()
         
         # Broadcast alert to all active websocket connections
         alert_payload = {
@@ -146,6 +181,9 @@ async def create_transaction(
                 "fraud_score": fraud_score,
                 "amount": tx.amount,
                 "user_email": tx.user_email,
+                "seller_id": tx.seller_id,
+                "product_name": tx.product_name,
+                "seller_name": tx.seller_name,
                 "created_at": alert.created_at.isoformat()
             }
         }

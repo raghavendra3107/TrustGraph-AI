@@ -16,9 +16,30 @@ class UserBase(BaseModel):
     full_name: Optional[str] = None
     role: str = "analyst"
     is_active: bool = True
+    seller_id: Optional[str] = None
+    seller_name: Optional[str] = None
+    assigned_category: Optional[str] = None
+    seller_location: Optional[str] = None
 
 class UserCreate(UserBase):
     password: str
+
+class MerchantCreate(BaseModel):
+    email: EmailStr
+    password: str
+    full_name: Optional[str] = None
+    seller_id: str
+    seller_name: str
+    assigned_category: Optional[str] = "Electronics"
+    seller_location: Optional[str] = "Cupertino, USA"
+
+class MerchantUpdate(BaseModel):
+    full_name: Optional[str] = None
+    seller_id: Optional[str] = None
+    seller_name: Optional[str] = None
+    assigned_category: Optional[str] = None
+    seller_location: Optional[str] = None
+    is_active: Optional[bool] = None
 
 class UserResponse(UserBase):
     id: int
@@ -34,6 +55,12 @@ class TransactionBase(BaseModel):
     amount: float
     currency: str = "USD"
     merchant_category: str
+    product_name: Optional[str] = "Standard Product"
+    product_category: Optional[str] = "Electronics"
+    seller_name: Optional[str] = "Standard Store"
+    customer_id: Optional[str] = "CUST-1001"
+    customer_location: Optional[str] = "Hyderabad, India"
+    seller_location: Optional[str] = "Cupertino, USA"
     ip_address: str
     device_id: str
     card_hash: str
@@ -45,19 +72,6 @@ class TransactionBase(BaseModel):
 class TransactionCreate(TransactionBase):
     pass
 
-class TransactionResponse(TransactionBase):
-    id: int
-    fraud_score: float
-    is_flagged: bool
-    status: str
-    risk_explanation: Optional[str] = None
-    transaction_time: datetime
-    created_at: datetime
-    appeal: Optional[AppealResponse] = None
-
-    class Config:
-        from_attributes = True
-
 # Appeal Schemas
 class AppealBase(BaseModel):
     reason: str
@@ -67,22 +81,50 @@ class AppealCreate(BaseModel):
     reason: str
 
 class AppealUpdate(BaseModel):
-    status: str  # approved, rejected
+    status: Optional[str] = None  # approved, rejected
     analyst_feedback: Optional[str] = None
+    
+    # Marketplace workflow updates
+    investigation_status: Optional[str] = None  # recommended_approve, recommended_reject
+    investigation_notes: Optional[str] = None
+    analyst_recommendation: Optional[str] = None
+    merchant_final_decision: Optional[str] = None
+    final_order_status: Optional[str] = None  # approved, rejected
 
-class AppealResponse(BaseModel):
+class AppealNestedResponse(BaseModel):
     id: int
     transaction_id: int
     user_email: str
     reason: str
     status: str
     analyst_feedback: Optional[str] = None
+    investigation_status: Optional[str] = None
+    investigation_notes: Optional[str] = None
+    analyst_recommendation: Optional[str] = None
+    merchant_final_decision: Optional[str] = None
+    merchant_decision_timestamp: Optional[datetime] = None
+    final_order_status: Optional[str] = None
     created_at: datetime
     updated_at: datetime
-    transaction: Optional[TransactionResponse] = None
 
     class Config:
         from_attributes = True
+
+class TransactionResponse(TransactionBase):
+    id: int
+    fraud_score: float
+    is_flagged: bool
+    status: str
+    risk_explanation: Optional[str] = None
+    transaction_time: datetime
+    created_at: datetime
+    appeal: Optional[AppealNestedResponse] = None
+
+    class Config:
+        from_attributes = True
+
+class AppealResponse(AppealNestedResponse):
+    transaction: Optional[TransactionResponse] = None
 
 # Alert Schemas
 class AlertResponse(BaseModel):
@@ -148,6 +190,10 @@ class DashboardStats(BaseModel):
     revenue_at_risk: float
     monthly_trends: List[dict]
     risk_distribution: List[dict]
+    flagged_transactions: Optional[int] = 0
+    approval_rate: Optional[float] = 0.0
+    product_performance: Optional[List[dict]] = []
+    fraud_review_summary: Optional[dict] = None
 
 # System Settings Schemas
 class SystemSettingBase(BaseModel):

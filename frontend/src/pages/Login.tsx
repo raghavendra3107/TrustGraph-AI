@@ -30,19 +30,6 @@ export const Login: React.FC = () => {
     }
   };
 
-  const loadDemoUser = (userRole: 'admin' | 'analyst' | 'merchant') => {
-    if (userRole === 'admin') {
-      setEmail('admin@trustgraph.ai');
-      setPassword('admin123');
-    } else if (userRole === 'analyst') {
-      setEmail('analyst@trustgraph.ai');
-      setPassword('analyst123');
-    } else {
-      setEmail('merchant@trustgraph.ai');
-      setPassword('merchant123');
-    }
-  };
-
   return (
     <div className="min-h-screen relative flex items-center justify-center bg-slate-950 px-4 overflow-hidden">
       {/* Dynamic background lights */}
@@ -59,7 +46,7 @@ export const Login: React.FC = () => {
               TrustGraph <span className="text-blue-500">AI</span>
             </h1>
             <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block mt-0.5">
-              Enterprise Fraud Analytics
+              Fraud Guard System
             </span>
           </div>
         </div>
@@ -68,7 +55,7 @@ export const Login: React.FC = () => {
           <div className="mb-6">
             <h2 className="text-xl font-bold text-slate-100">Sign In</h2>
             <p className="text-xs text-slate-400 mt-1.5">
-              Access the analytics engine and monitor transactional integrity.
+              Enter your enterprise credentials to access TrustGraph AI.
             </p>
           </div>
 
@@ -80,7 +67,7 @@ export const Login: React.FC = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
+             <div>
               <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
                 Email Address
               </label>
@@ -93,7 +80,7 @@ export const Login: React.FC = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="analyst@trustgraph.ai"
+                  placeholder="name@company.com"
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-900/60 border border-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-xl text-sm text-slate-100 outline-none transition-all placeholder:text-slate-600"
                 />
               </div>
@@ -127,33 +114,6 @@ export const Login: React.FC = () => {
               {!isLoading && <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform" />}
             </button>
           </form>
-
-          {/* Quick Seed accounts login */}
-          <div className="mt-8 pt-6 border-t border-slate-800/60">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-3 text-center">
-              Quick Connect Demo Accounts
-            </span>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                onClick={() => loadDemoUser('admin')}
-                className="py-2 px-1 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900/30 text-[10px] font-bold text-slate-300 transition-all cursor-pointer text-center"
-              >
-                Admin
-              </button>
-              <button
-                onClick={() => loadDemoUser('analyst')}
-                className="py-2 px-1 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900/30 text-[10px] font-bold text-slate-300 transition-all cursor-pointer text-center"
-              >
-                Analyst
-              </button>
-              <button
-                onClick={() => loadDemoUser('merchant')}
-                className="py-2 px-1 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900/30 text-[10px] font-bold text-slate-300 transition-all cursor-pointer text-center"
-              >
-                Merchant
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>

@@ -33,7 +33,21 @@ export const AlertProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
 
     setConnectionStatus('connecting');
-    const wsUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws';
+    const getWebSocketUrl = (): string => {
+      if (import.meta.env.VITE_WS_URL) {
+        return import.meta.env.VITE_WS_URL;
+      }
+      if (import.meta.env.VITE_API_URL) {
+        const apiUrl = import.meta.env.VITE_API_URL;
+        const isSecure = apiUrl.startsWith('https://');
+        const protocol = isSecure ? 'wss://' : 'ws://';
+        const host = apiUrl.replace(/^https?:\/\//, '').replace(/\/api\/v1\/?$/, '').replace(/\/$/, '');
+        return `${protocol}${host}/ws`;
+      }
+      return 'ws://localhost:8001/ws';
+    };
+
+    const wsUrl = getWebSocketUrl();
     const socket = new WebSocket(wsUrl);
 
     socket.onopen = () => {

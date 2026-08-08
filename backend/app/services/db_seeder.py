@@ -44,8 +44,52 @@ def seed_db(db: Session):
         {
             "email": "merchant@trustgraph.ai",
             "password": "merchant123",
-            "full_name": "Apex Retailers",
-            "role": "merchant"
+            "full_name": "Apex Store Manager",
+            "role": "merchant",
+            "seller_id": "SELL_APEX_STORE",
+            "seller_name": "Apex Store",
+            "assigned_category": "Electronics",
+            "seller_location": "New York, USA"
+        },
+        {
+            "email": "apple@trustgraph.ai",
+            "password": "apple123",
+            "full_name": "Apple Store Manager",
+            "role": "merchant",
+            "seller_id": "SELL_APPLE_STORE",
+            "seller_name": "Apple Store",
+            "assigned_category": "Electronics",
+            "seller_location": "Cupertino, USA"
+        },
+        {
+            "email": "dell@trustgraph.ai",
+            "password": "dell123",
+            "full_name": "Dell Store Manager",
+            "role": "merchant",
+            "seller_id": "SELL_DELL_STORE",
+            "seller_name": "Dell Store",
+            "assigned_category": "Electronics",
+            "seller_location": "Round Rock, USA"
+        },
+        {
+            "email": "hp@trustgraph.ai",
+            "password": "hp123",
+            "full_name": "HP Store Manager",
+            "role": "merchant",
+            "seller_id": "SELL_HP_STORE",
+            "seller_name": "HP Store",
+            "assigned_category": "Electronics",
+            "seller_location": "Palo Alto, USA"
+        },
+        {
+            "email": "fashion@trustgraph.ai",
+            "password": "fashion123",
+            "full_name": "Fashion Store Manager",
+            "role": "merchant",
+            "seller_id": "SELL_FASHION_STORE",
+            "seller_name": "Fashion Store",
+            "assigned_category": "Clothing",
+            "seller_location": "Paris, France"
         }
     ]
     for u in users_presets:
@@ -55,7 +99,11 @@ def seed_db(db: Session):
                 email=u["email"],
                 hashed_password=get_password_hash(u["password"]),
                 full_name=u["full_name"],
-                role=u["role"]
+                role=u["role"],
+                seller_id=u.get("seller_id"),
+                seller_name=u.get("seller_name"),
+                assigned_category=u.get("assigned_category"),
+                seller_location=u.get("seller_location")
             ))
     db.commit()
 
@@ -72,12 +120,19 @@ def seed_db(db: Session):
         "411111XXXXXX1234", "550000XXXXXX5678", "378282XXXXXX9012", 
         "400000XXXXXX9999", "601111XXXXXX3344"
     ]
-    categories = ["Electronics", "Apparel", "Gift Cards", "Digital Goods", "Travel", "Jewelry"]
     emails = [
         "customer1@gmail.com", "customer2@yahoo.com", "customer3@outlook.com",
         "fraudster_alpha@tempmail.com", "fraudster_beta@tempmail.com"
     ]
-    sellers = ["SELL_APEX_STORE", "SELL_EASY_RETAIL", "SELL_SUSPECT_SHOP"]
+    
+    merchant_catalog = [
+        {"seller_id": "SELL_APPLE_STORE", "seller_name": "Apple Store", "product_name": "iPhone 17", "product_category": "Electronics", "seller_location": "Cupertino, USA"},
+        {"seller_id": "SELL_DELL_STORE", "seller_name": "Dell Store", "product_name": "Dell XPS", "product_category": "Electronics", "seller_location": "Round Rock, USA"},
+        {"seller_id": "SELL_HP_STORE", "seller_name": "HP Store", "product_name": "HP Laptop", "product_category": "Electronics", "seller_location": "Palo Alto, USA"},
+        {"seller_id": "SELL_FASHION_STORE", "seller_name": "Fashion Store", "product_name": "T-Shirt", "product_category": "Clothing", "seller_location": "Paris, France"},
+        {"seller_id": "SELL_APEX_STORE", "seller_name": "Apex Store", "product_name": "Apex Smart Tablet", "product_category": "Electronics", "seller_location": "New York, USA"}
+    ]
+    
     delivery_partners = ["COURIER_DHL", "COURIER_FEDEX", "COURIER_EXPRESS_MESSENGER"]
 
     addresses = [
@@ -90,32 +145,32 @@ def seed_db(db: Session):
 
     transactions = []
     
-    # Generate 25 normal/semi-normal transactions
+    # Generate 25 normal/semi-normal transactions across merchants
     for i in range(25):
-        is_fraudulent = (i % 6 == 0)  # Make some flagged
+        is_fraudulent = (i % 5 == 0)  # Make every 5th transaction flagged/blocked
         
         tx_id = f"TRX{100000 + i}"
         user_email = random.choice(emails)
         amount = round(random.uniform(15.0, 950.0), 2)
-        m_cat = random.choice(categories)
+        merchant_item = merchant_catalog[i % len(merchant_catalog)]
+        
         device = random.choice(devices)
         ip = random.choice(ips)
         card = random.choice(cards)
-        seller = random.choice(sellers[:2])
         delivery = random.choice(delivery_partners[:2])
         
         billing = random.choice(addresses[:3])
         shipping = billing
+        cust_id = f"CUST-100{i % 5 + 1}"
+        cust_loc = "Hyderabad, India" if i % 2 == 0 else "Bangalore, India"
         
         # Inject anomalies for fraud
         if is_fraudulent:
             user_email = random.choice(emails[3:]) # tempmail users
             amount = round(random.uniform(1200.0, 4800.0), 2)
-            m_cat = "Gift Cards" if i % 2 == 0 else "Electronics"
             device = "DEV_SHARED_SUSPECT_009"
             ip = "185.220.101.4"
             shipping = random.choice(addresses[3:]) # Shipping elsewhere
-            seller = "SELL_SUSPECT_SHOP"
             delivery = "COURIER_EXPRESS_MESSENGER"
             velocity = 6
             collusion_val = 85.0 # Pre-calculate simulated graph collusion
@@ -126,7 +181,7 @@ def seed_db(db: Session):
         risk_score, report = hybrid_risk_engine.calculate_hybrid_risk(
             db=db,
             amount=amount,
-            merchant_category=m_cat,
+            merchant_category=merchant_item["product_category"],
             ip_address=ip,
             device_id=device,
             billing_address=billing,
@@ -150,18 +205,24 @@ def seed_db(db: Session):
             user_email=user_email,
             amount=amount,
             currency="USD",
-            merchant_category=m_cat,
+            merchant_category=merchant_item["product_category"],
+            product_name=merchant_item["product_name"],
+            product_category=merchant_item["product_category"],
+            seller_name=merchant_item["seller_name"],
+            customer_id=cust_id,
+            customer_location=cust_loc,
+            seller_location=merchant_item["seller_location"],
             ip_address=ip,
             device_id=device,
             card_hash=card,
             billing_address=billing,
             shipping_address=shipping,
-            seller_id=seller,
+            seller_id=merchant_item["seller_id"],
             delivery_partner=delivery,
             fraud_score=risk_score,
             is_flagged=is_flagged,
             status=status,
-            risk_explanation=json.dumps(report), # Store the complete report serialized
+            risk_explanation=json.dumps(report),
             transaction_time=datetime.datetime.utcnow() - datetime.timedelta(days=random.randint(0, 15), hours=random.randint(1, 23))
         )
         transactions.append(tx)
