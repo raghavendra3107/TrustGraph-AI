@@ -16,6 +16,75 @@ By unifying rule-based heuristics, explainable AI (XAI) risk scoring, relational
 
 ---
 
+---
+## System Workflow
+
+```mermaid
+flowchart TD
+    A["Customer Places Order"] --> B["Transaction Validation"]
+
+    B --> C["Customer & Transaction History"]
+
+    C --> D["Fraud Risk Engine"]
+
+    D --> E["Fraud Risk Score<br/>0 - 100"]
+
+    E --> F{"Risk Level"}
+
+    F -->|"Low Risk"| G["Continue Transaction"]
+
+    F -->|"High Risk"| H["Create Fraud Investigation"]
+
+    H --> I["Investigation Graph"]
+
+    I --> J["Analyze Shared Identifiers"]
+
+    J --> J1["IP Address"]
+    J --> J2["Device ID"]
+    J --> J3["Billing Address"]
+    J --> J4["Shipping Address"]
+
+    J1 --> K["Identify Related Customers"]
+    J2 --> K
+    J3 --> K
+    J4 --> K
+
+    K --> L["Security Analyst Investigation"]
+
+    L --> M["Fraud Reasons & Risk Analysis"]
+
+    M --> N["Analyst Notes & Recommendation"]
+
+    N --> O["Relevant Merchant"]
+
+    O --> P{"Merchant Final Decision"}
+
+    P -->|"Approve"| Q["Approved Order"]
+
+    P -->|"Reject"| R["Blocked Order"]
+
+    G --> S["Transaction Completed"]
+
+    Q --> S
+
+    R --> T["Fraud Case Closed"]
+
+    classDef start fill:#2563eb,color:#fff,stroke:#1d4ed8
+    classDef process fill:#1e293b,color:#fff,stroke:#475569
+    classDef risk fill:#dc2626,color:#fff,stroke:#991b1b
+    classDef decision fill:#7c3aed,color:#fff,stroke:#6d28d9
+    classDef success fill:#059669,color:#fff,stroke:#047857
+    classDef danger fill:#dc2626,color:#fff,stroke:#991b1b
+
+    class A start
+    class B,C,D,I,J,J1,J2,J3,J4,K,L,M,N,O process
+    class E,H risk
+    class F,P decision
+    class G,Q,S success
+    class R,T danger
+
+    ---
+
 ## 🚀 Key Innovation & Platform Architecture
 
 ```mermaid
@@ -158,29 +227,7 @@ combined_score = (w_rule * rule_score) + (w_xgb * history_score) + (w_graph * sh
 
 ---
 
-## 🔄 End-to-End Investigation & Review Workflow
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Customer as External Buyer (Metadata)
-    participant Engine as Hybrid Risk Engine
-    actor Analyst as Security Analyst
-    actor Merchant as Merchant (Store Owner)
-    participant WS as WebSocket Service
-
-    Customer->>Engine: Submit New Order / Transaction
-    Engine->>Engine: Calculate Risk Score & Flag High Risk
-    Engine-->>Analyst: Populate Fraud Reviews Queue
-    Analyst->>Analyst: Inspect Fraud Score, XAI Factors & 4-Tier Graph
-    Analyst->>Merchant: Submit Notes & Recommendation (Approve / Reject)
-    WS-->>Merchant: Real-Time WebSocket Notification Triggered
-    Merchant->>Merchant: Review Analyst Report & Graph Collusion Evidence
-    Merchant->>Engine: Submit Final Order Decision (Approve / Reject Order)
-    Engine->>Engine: Update Final Order Status & Clear Flagged State
-```
-
----
 
 ## ⚡ Targeted Real-Time WebSocket Notifications
 
