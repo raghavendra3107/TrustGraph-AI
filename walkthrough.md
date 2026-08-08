@@ -1,60 +1,57 @@
-# Production Deployment Preparation Guide
+# Walkthrough - High-Risk Demo Data Seeder Guide
 
-The TrustGraph AI codebase has been prepared and verified for production deployment to **Vercel** (Frontend) and **Render** (Backend & PostgreSQL).
-
----
-
-## 📋 Audit & Configuration Summary
-
-### 1. Frontend API Configuration (`frontend/src/services/api.ts`)
-- Configured to use `import.meta.env.VITE_API_URL` with fallback to local development URL (`http://localhost:8001/api/v1`).
-- Zero hardcoded production URLs.
-
-### 2. Dynamic WebSocket Configuration (`frontend/src/context/AlertContext.tsx`)
-- Dynamically derives the WebSocket URL from `VITE_WS_URL` or `VITE_API_URL`:
-  - `https://backend.onrender.com/api/v1` $\rightarrow$ `wss://backend.onrender.com/ws`
-  - Local development fallback: `ws://localhost:8001/ws`
-
-### 3. Production CORS & Security (`backend/app/core/config.py` & `backend/main.py`)
-- Restricts CORS origins in production using `FRONTEND_URL` and `BACKEND_CORS_ORIGINS` environment variables.
-- Added `/health` endpoint returning `{"status": "ok"}`.
-
-### 4. Database Dual-Compatibility (`backend/app/db/session.py`)
-- Automatically normalizes Render/Heroku `postgres://` URLs to `postgresql://`.
-- Preserves local SQLite development fallback (`sqlite:///./trustgraph.db`).
-
-### 5. Environment Secrets & Git Protection (`.gitignore` & `.env.example`)
-- Added `.env`, `.env.local`, and `*.env` rules to root `.gitignore`.
-- Created safe `.env.example` placeholder files in root, `backend/`, and `frontend/`.
+We implemented a safe, non-destructive demo seeding utility (`backend/seed_demo_fraud.py`) that evaluates 5 demo customer transactions through the existing `HybridRiskEngine` and `GraphAnalyzer` business logic without hardcoding fraud scores.
 
 ---
 
-## 🚀 Environment Variables Required for Deployment
+## 📊 Seeded Demo Transactions Summary
 
-### A. Render (Backend Web Service & PostgreSQL)
-Configure the following in the Render Dashboard under **Environment**:
-- `DATABASE_URL`: Your PostgreSQL connection string (`postgresql://...`)
-- `SECRET_KEY`: A strong random string for JWT signatures
-- `FRONTEND_URL`: Your deployed Vercel URL (e.g., `https://trustgraph-ai.vercel.app`)
-
-### B. Vercel (Frontend Project)
-Configure the following in the Vercel Dashboard under **Project Settings > Environment Variables**:
-- `VITE_API_URL`: `https://<your-render-backend-url>.onrender.com/api/v1`
-- `VITE_WS_URL`: `wss://<your-render-backend-url>.onrender.com/ws` *(Optional, auto-derived if omitted)*
+| Transaction ID | Demo Customer Email | Seller / Store | Amount | Fraud Score | Risk Level | Status |
+| :--- | :--- | :--- | :---: | :---: | :---: | :---: |
+| `TRX_DEMO_FRAUD_01` | `demo.fraud01@trustgraph.demo` | Apple Store | $2,499.99 | 30.0% | Medium | APPROVED |
+| `TRX_DEMO_FRAUD_02` | `demo.fraud02@trustgraph.demo` | Apple Store | $2,899.99 | 54.0% | Medium | **FLAGGED** |
+| `TRX_DEMO_FRAUD_03` | `demo.fraud03@trustgraph.demo` | Dell Store | $3,199.99 | 60.0% | **HIGH** | **FLAGGED** |
+| `TRX_DEMO_FRAUD_04` | `demo.fraud04@trustgraph.demo` | HP Store | $2,799.99 | 60.0% | **HIGH** | **FLAGGED** |
+| `TRX_DEMO_FRAUD_05` | `demo.fraud05@trustgraph.demo` | Fashion Store | $3,499.99 | 60.0% | **HIGH** | **FLAGGED** |
 
 ---
 
-## 🛠 Platform Deployment Specifications
+## 🔗 Shared Suspicious Attribute Collusion Network
 
-- **Backend Start Command**: `cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT`
-- **Frontend Build Command**: `npm run build`
-- **Frontend Output Directory**: `dist`
+All 5 demo customer accounts share overlapping network attributes, triggering high-risk collusion flags and shared identifier linkages:
+- **Shared Device ID**: `DEMO_SHARED_DEVICE_001`
+- **Shared IP Address**: `10.99.99.50`
+- **Shared Shipping Address**: `999 Demo Street, TrustGraph City`
+- **Address Mismatch**: Billing address $\neq$ Shipping address for all 5 accounts.
+- **Graph Connection**: NetworkX compiles 27 nodes and 60 relationship edges linking all 5 accounts.
 
 ---
 
-## ✅ Local Verification Results
+## 💻 PowerShell Commands to Execute & Verify
 
-- **Frontend Compilation**: `npm run build` completed in 527ms with **0 errors**.
-- **Backend Import Check**: `python -c "import main"` completed with **0 errors**.
-- **Health Check Endpoint**: `GET /health` returned `200 OK` (`{"status": "ok"}`).
-- **Interactive Documentation**: `GET /docs` returned `200 OK`.
+### 1. Execute Seeder Locally
+```powershell
+python seed_demo_fraud.py
+```
+
+### 2. Execute Seeder against Render PostgreSQL Database
+Set the `DATABASE_URL` environment variable for the PowerShell session before executing:
+```powershell
+$env:DATABASE_URL="postgresql://user:password@host.render.com:5432/dbname"; python seed_demo_fraud.py
+```
+
+### 3. Verify Seeder Output via HTTP API
+```powershell
+python -c "import urllib.request, urllib.parse, json; login=urllib.parse.urlencode({'username':'admin@trustgraph.ai','password':'admin123'}).encode(); tok=json.loads(urllib.request.urlopen(urllib.request.Request('http://127.0.0.1:8001/api/v1/auth/login',data=login,headers={'Content-Type':'application/x-www-form-urlencoded'})).read().decode())['access_token']; print('Stats:', json.loads(urllib.request.urlopen(urllib.request.Request('http://127.0.0.1:8001/api/v1/admin/stats',headers={'Authorization':f'Bearer {tok}'})).read().decode()))"
+```
+
+---
+
+## 📈 Expected Dashboard State
+
+- **Total Transactions**: `5`
+- **Approved Transactions**: `1`
+- **Flagged Transactions**: `4`
+- **Global Fraud Rate**: `80.0%`
+- **Fraud Reviews**: 4 pending review items in `Fraud Reviews` tab.
+- **Network Graph**: Selecting `TRX_DEMO_FRAUD_05` renders the 27-node investigation graph connecting all 5 demo customer accounts.
