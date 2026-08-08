@@ -16,52 +16,33 @@ By unifying rule-based heuristics, explainable AI (XAI) risk scoring, relational
 
 ---
 
----
-
-## System Workflow
+## 🚀 Key Innovation & Platform Architecture
 
 ```mermaid
 flowchart TD
+    subgraph Client ["Frontend Layer (Vercel)"]
+        UI["React 19 + Vite SPA"]
+        WSClient["WebSocket Notification Subscriptions"]
+    end
 
-    A["Customer Places Order"] --> B["Validate Transaction"]
-    B --> C["Check Customer History"]
-    C --> D["Fraud Risk Engine"]
-    D --> E["Calculate Fraud Risk Score 0-100"]
-    E --> F{"Risk Level"}
+    subgraph Backend ["Backend API & Intelligence Layer (Render)"]
+        API["FastAPI REST Services (/api/v1)"]
+        WSServer["WebSocket Manager (/ws)"]
+        RiskEngine["Hybrid Risk Engine"]
+        GraphEngine["Graph Analyzer"]
+    end
 
-    F -->|"Low Risk 0-30"| G["Continue Transaction"]
-    F -->|"Medium Risk 31-79"| H["Additional Verification"]
-    F -->|"High Risk 80-100"| I["Create Fraud Investigation"]
+    subgraph Database ["Persistence Layer"]
+        DB[("PostgreSQL / SQLite")]
+    end
 
-    H --> J["Security Analyst Review"]
-    I --> K["Fraud Investigation Graph"]
-
-    K --> L["Analyze Shared Identifiers"]
-
-    L --> L1["IP Address"]
-    L --> L2["Device ID"]
-    L --> L3["Billing Address"]
-    L --> L4["Shipping Address"]
-
-    L1 --> M["Identify Related Customers"]
-    L2 --> M
-    L3 --> M
-    L4 --> M
-
-    M --> J
-    J --> N["Fraud Reasons and Risk Analysis"]
-    N --> O["Analyst Notes"]
-    O --> P["Analyst Recommendation"]
-    P --> Q["Merchant Review"]
-
-    Q --> R{"Merchant Final Decision"}
-
-    R -->|"Approve"| S["Approved Order"]
-    R -->|"Reject"| T["Blocked Order"]
-
-    G --> U["Transaction Completed"]
-    S --> U
-    T --> V["Fraud Case Closed"]
+    UI --> API
+    WSClient <--> WSServer
+    API --> RiskEngine
+    API --> GraphEngine
+    RiskEngine --> DB
+    GraphEngine --> DB
+```
 
 ---
 
@@ -86,6 +67,40 @@ TrustGraph AI enforces strict Role-Based Access Control (RBAC) across **three di
 
 ---
 
+## 🔄 End-to-End System Workflow
+
+```mermaid
+flowchart TD
+    A["Customer Places Order"] --> B["Validate Transaction"]
+    B --> C["Check Customer History"]
+    C --> D["Fraud Risk Engine"]
+    D --> E["Calculate Risk Score (0-100)"]
+    E --> F{"Risk Score Threshold"}
+
+    F -->|"Low Risk (0-30)"| G["Approve Order"]
+    F -->|"Medium Risk (31-79)"| H["Flag for Fraud Review"]
+    F -->|"High Risk (80-100)"| I["Flag for Urgent Review"]
+
+    H --> J["Security Analyst Investigation"]
+    I --> J
+
+    J --> K["Analyze 4-Tier Graph Network"]
+    K --> L["Examine Shared Devices / IPs / Addresses"]
+    L --> M["Submit Notes & Analyst Recommendation"]
+
+    M --> N["Relevant Merchant Reviews Report"]
+    N --> O{"Merchant Final Decision"}
+
+    O -->|"Approve Order"| P["Order Approved"]
+    O -->|"Reject Order"| Q["Order Blocked"]
+
+    G --> R["Transaction Completed"]
+    P --> R
+    Q --> S["Fraud Case Closed"]
+```
+
+---
+
 ## 🛒 Multi-Merchant Marketplace Workflow & Data Isolation
 
 TrustGraph AI isolates merchant transaction logs, reviews, statistics, and notifications by `seller_id`. 
@@ -98,7 +113,7 @@ TrustGraph AI isolates merchant transaction logs, reviews, statistics, and notif
 - **Fashion Store** (`fashion@trustgraph.ai` | `SELL_FASHION_STORE`)
 - **Apex Retailers** (`merchant@trustgraph.ai` | `SELL_APEX_STORE`)
 
-```
+```text
 [ Incoming Order ] ---> (seller_id: SELL_APPLE_STORE)
                                 |
              +------------------+------------------+
@@ -120,7 +135,7 @@ To eliminate chaotic force-directed layouts, TrustGraph AI visualizes transactio
 graph TD
     L0["Level 0: Buyer Account (Customer)"]
     L1["Level 1: Central Selected Transaction"]
-    
+
     L2_Prod["Product"]
     L2_Merch["Merchant"]
     L2_IP["IP Address"]
@@ -177,8 +192,6 @@ combined_score = (w_rule * rule_score) + (w_xgb * history_score) + (w_graph * sh
 
 ---
 
-
-
 ## ⚡ Targeted Real-Time WebSocket Notifications
 
 TrustGraph AI runs a dedicated WebSocket server (`/ws`). When an analyst completes an investigation recommendation or a new alert is generated, notifications are broadcasted live to connected merchant dashboards based on `seller_id` data isolation.
@@ -218,7 +231,7 @@ TrustGraph AI runs a dedicated WebSocket server (`/ws`). When an analyst complet
 
 ## 📁 Repository Structure
 
-```
+```text
 TrustGraph-AI/
 ├── backend/
 │   ├── app/
@@ -281,22 +294,6 @@ python backend/seed_demo_fraud.py
 
 # Run against Render PostgreSQL database:
 $env:DATABASE_URL="postgresql://user:password@host.render.com:5432/dbname"; python backend/seed_demo_fraud.py
-```
-
-### Seeder Output Example
-
-```text
-===========================================================================
-  TRUSTGRAPH AI - HIGH-RISK DEMO FRAUD DATA SEEDER  
-===========================================================================
-[CREATED] ID: TRX_DEMO_FRAUD_01  | Email: demo.fraud01@trustgraph.demo | Fraud Score:  30.0% | Risk: MEDIUM   | Status: APPROVED
-[CREATED] ID: TRX_DEMO_FRAUD_02  | Email: demo.fraud02@trustgraph.demo | Fraud Score:  54.0% | Risk: MEDIUM   | Status: FLAGGED
-[CREATED] ID: TRX_DEMO_FRAUD_03  | Email: demo.fraud03@trustgraph.demo | Fraud Score:  60.0% | Risk: HIGH     | Status: FLAGGED
-[CREATED] ID: TRX_DEMO_FRAUD_04  | Email: demo.fraud04@trustgraph.demo | Fraud Score:  60.0% | Risk: HIGH     | Status: FLAGGED
-[CREATED] ID: TRX_DEMO_FRAUD_05  | Email: demo.fraud05@trustgraph.demo | Fraud Score:  60.0% | Risk: HIGH     | Status: FLAGGED
----------------------------------------------------------------------------
-Summary: Created 5 demo transactions, Skipped 0 existing.
-===========================================================================
 ```
 
 ---
